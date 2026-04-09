@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dungeon Runs</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Dungeon Agents</h1>
+      <p class="subtitle">Run history</p>
+    </header>
+
+    {% if runs %}
+    <table class="runs-table">
+      <thead>
+        <tr>
+          <th>Run ID</th>
+          <th>Outcome</th>
+          <th>Turns</th>
+          <th>Events</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in runs %}
+        <tr>
+          <td><a href="/run/{{ r.run_id }}">{{ r.run_id[:8] }}</a></td>
+          <td><span class="badge badge--{{ r.outcome }}">{{ r.outcome }}</span></td>
+          <td>{{ r.total_turns }}</td>
+          <td>{{ r.event_count }}</td>
+          <td><a class="btn-small" href="/download/{{ r.run_id }}">↓ JSON</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No runs yet. Run <code>python run.py</code> to generate one.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

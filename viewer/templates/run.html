@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run {{ run_id[:8] }}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="back" href="/">← All runs</a>
+    <h1>Run <span class="mono">{{ run_id[:8] }}</span></h1>
+    <div class="header-actions">
+      <a class="btn" href="/download/{{ run_id }}">↓ Download JSON</a>
+    </div>
+  </header>
+
+  <!-- Summary bar injected by JS -->
+  <div id="summary-bar"></div>
+
+  <!-- Two-panel layout: timeline left, detail right -->
+  <div class="workspace">
+    <div class="timeline" id="timeline"></div>
+    <div class="detail-panel" id="detail-panel">
+      <p class="hint">Select a turn to inspect it.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const RUN = {{ data_json | safe }};
+const events = RUN.events.filter(e => e.phase !== "run_end");
+const endEvent = RUN.events.find(e => e.phase === "run_end");
+
+// ── Summary bar ────────────────────────────────────────────────────────────
+const sumBar = document.getElementById("summary-bar");
+if (endEvent) {
+  const divCount = RUN.events.filter(e => e.divergences && e.divergences.length > 0).length;
+  sumBar.innerHTML = `
+    <div class="summary-bar">
+      <span>Outcome: <strong class="badge badge--${endEvent.outcome}">${endEvent.outcome}</strong></span>
+      <span>Turns: <strong>${endEvent.total_turns}</strong></span>
+      <span>Events: <strong>${RUN.events.length}</strong></span>
+      <span class="${divCount > 0 ? 'warn' : ''}">Divergences: <strong>${divCount}</strong></span>
+    </div>`;
+}
+
+// ── Timeline ───────────────────────────────────────────────────────────────
+const timeline = document.getElementById("timeline");
+
+events.forEach((ev, idx) => {
+  const hasDivergence = ev.divergences && ev.divergences.length > 0;
+  const row = document.createElement("div");
+  row.className = "tl-row" + (hasDivergence ? " tl-row--diverge" : "");
+  row.dataset.idx = idx;
+
+  const tool = ev.action ? ev.action.tool : "—";
+  const success = ev.result && ev.result.success !== false ? "✓" : "✗";
+  const successClass = ev.result && ev.result.success !== false ? "ok" : "fail";
+
+  row.innerHTML = `
+    <span class="tl-turn">${ev.turn}</span>
+    <span class="tl-agent agent-${ev.agent}">${ev.agent}</span>
+    <span class="tl-tool">${tool}</span>
+    <span class="tl-status ${successClass}">${success}</span>
+    ${hasDivergence ? '<span class="tl-flag" title="Belief divergence">⚠</span>' : '<span class="tl-flag"></span>'}
+  `;
+  row.addEventListener("click", () => selectEvent(idx, row));
+  timeline.appendChild(row);
+});
+
+// ── Detail panel ───────────────────────────────────────────────────────────
+function selectEvent(idx, row) {
+  document.querySelectorAll(".tl-row").forEach(r => r.classList.remove("tl-row--active"));
+  row.classList.add("tl-row--active");
+
+  const ev = events[idx];
+  const panel = document.getElementById("detail-panel");
+
+  const divHtml = ev.divergences && ev.divergences.length > 0
+    ? `<div class="section diverge-section">
+        <h3>⚠ Belief Divergences</h3>
+        ${ev.divergences.map(d => `
+          <div class="diverge-item">
+            <span class="div-type">${d.type}</span>
+            <span>believed <code>${JSON.stringify(d.believed)}</code></span>
+            <span>truth <code>${JSON.stringify(d.truth)}</code></span>
+          </div>`).join("")}
+       </div>`
+    : "";
+
+  const argsStr = ev.action ? JSON.stringify(ev.action.args, null, 2) : "—";
+  const resultStr = ev.result ? JSON.stringify(ev.result, null, 2) : "—";
+
+  panel.innerHTML = `
+    <div class="detail-header">
+      <span>Turn <strong>${ev.turn}</strong></span>
+      <span>Agent <strong class="agent-${ev.agent}">${ev.agent}</strong></span>
+      <span class="mono dim">${ev.timestamp ? ev.timestamp.slice(11,19) : ""}</span>
+      ${ev.latency_ms != null ? `<span>${ev.latency_ms} ms</span>` : ""}
+    </div>
+
+    ${divHtml}
+
+    <div class="section">
+      <h3>Action</h3>
+      <div class="kv"><span>Tool</span><code>${ev.action ? ev.action.tool : "—"}</code></div>
+      <div class="kv"><span>Args</span><pre>${argsStr}</pre></div>
+    </div>
+
+    <div class="section">
+      <h3>Result</h3>
+      <pre>${resultStr}</pre>
+    </div>
+
+    <div class="section">
+      <h3>Belief State</h3>
+      <div class="kv"><span>Position</span><code>${JSON.stringify(ev.belief_state.position)}</code></div>
+      <div class="kv"><span>Inventory</span><code>${JSON.stringify(ev.belief_state.inventory)}</code></div>
+      <div class="kv"><span>Door unlocked</span><code>${ev.belief_state.door_unlocked}</code></div>
+      <div class="kv"><span>Messages</span><code>${JSON.stringify(ev.belief_state.messages_received || [])}</code></div>
+    </div>
+
+    <div class="section">
+      <h3>World Truth</h3>
+      <pre>${JSON.stringify(ev.world_truth, null, 2)}</pre>
+    </div>
+
+    <div class="section collapsible" id="vis-${idx}">
+      <h3 class="collapsible-toggle" onclick="toggleSection('vis-${idx}')">▶ Visible Cells</h3>
+      <div class="collapsible-body hidden">
+        ${renderGrid(ev.belief_state)}
+      </div>
+    </div>
+  `;
+}
+
+function renderGrid(bs) {
+  if (!bs || !bs.visible_cells) return "<em>n/a</em>";
+  const cells = bs.visible_cells;
+  const keys = Object.keys(cells).map(k => k.split(",").map(Number));
+  const rows = keys.map(k => k[0]);
+  const cols = keys.map(k => k[1]);
+  const minR = Math.min(...rows), maxR = Math.max(...rows);
+  const minC = Math.min(...cols), maxC = Math.max(...cols);
+
+  let html = '<div class="mini-grid">';
+  for (let r = minR; r <= maxR; r++) {
+    html += '<div class="mini-row">';
+    for (let c = minC; c <= maxC; c++) {
+      const v = cells[`${r},${c}`] || "?";
+      const cls = cellClass(v);
+      const isAgent = v === bs.agent_id || v === "A" || v === "B";
+      html += `<div class="mini-cell ${cls}" title="${r},${c}">${v}</div>`;
+    }
+    html += "</div>";
+  }
+  html += "</div>";
+  return html;
+}
+
+function cellClass(v) {
+  const map = {"#":"c-wall",".":"c-empty","K":"c-key","D":"c-door","O":"c-open","E":"c-exit","A":"c-agent","B":"c-agent"};
+  return map[v] || "";
+}
+
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const body = el.querySelector(".collapsible-body");
+  const toggle = el.querySelector(".collapsible-toggle");
+  body.classList.toggle("hidden");
+  toggle.textContent = toggle.textContent.replace(/[▶▼]/, body.classList.contains("hidden") ? "▶" : "▼");
+}
+
+// Auto-select first event
+if (events.length > 0) {
+  selectEvent(0, timeline.firstChild);
+}
+</script>
+</body>
+</html>
