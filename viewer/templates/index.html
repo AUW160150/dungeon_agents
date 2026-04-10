@@ -3,42 +3,508 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dungeon Runs</title>
+  <title>Dungeon Agents — Observer</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-  <div class="page">
-    <header>
-      <h1>Dungeon Agents</h1>
-      <p class="subtitle">Run history</p>
-    </header>
+<div class="app">
 
-    {% if runs %}
-    <table class="runs-table">
-      <thead>
-        <tr>
-          <th>Run ID</th>
-          <th>Outcome</th>
-          <th>Turns</th>
-          <th>Events</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in runs %}
-        <tr>
-          <td><a href="/run/{{ r.run_id }}">{{ r.run_id[:8] }}</a></td>
-          <td><span class="badge badge--{{ r.outcome }}">{{ r.outcome }}</span></td>
-          <td>{{ r.total_turns }}</td>
-          <td>{{ r.event_count }}</td>
-          <td><a class="btn-small" href="/download/{{ r.run_id }}">↓ JSON</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% else %}
-    <p class="empty">No runs yet. Run <code>python run.py</code> to generate one.</p>
-    {% endif %}
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-left">
+      <h1>Dungeon Agents</h1>
+      <span id="run-id-label" class="run-id-label"></span>
+    </div>
+    <div class="header-controls">
+      <label class="ctrl-label">Seed
+        <input id="seed-input" type="number" placeholder="random" min="0" max="9999" />
+      </label>
+      <label class="ctrl-label">Max turns
+        <input id="turns-input" type="number" value="100" min="10" max="500" />
+      </label>
+      <button id="run-btn" class="btn-run" onclick="startRun()">▶ Run</button>
+    </div>
+  </header>
+
+  <!-- ── Status bar ─────────────────────────────────────────────────────── -->
+  <div class="status-bar" id="status-bar">
+    <span id="status-badge" class="badge badge--idle">idle</span>
+    <span id="turn-counter" class="status-item">—</span>
+    <span id="divergence-counter" class="status-item warn hidden">0 divergences</span>
+    <div class="milestones" id="milestones"></div>
+    <div class="header-right-actions">
+      <button id="download-btn" class="btn-small" disabled onclick="downloadJSON()">↓ Export JSON</button>
+    </div>
   </div>
+
+  <!-- ── Main workspace ─────────────────────────────────────────────────── -->
+  <div class="workspace">
+
+    <!-- Left: Trace log ──────────────────────────────────────────────── -->
+    <div class="log-panel">
+      <div class="panel-title">Trace Log
+        <span class="panel-subtitle">belief · action · divergence</span>
+      </div>
+      <div class="event-log" id="event-log">
+        <div class="log-empty">Start a run to see the trace.</div>
+      </div>
+    </div>
+
+    <!-- Right: Live dungeon ───────────────────────────────────────────── -->
+    <div class="dungeon-panel">
+      <div class="panel-title">Dungeon
+        <span class="panel-subtitle">live · fog of war per agent</span>
+      </div>
+      <div class="dungeon-legend">
+        <span class="leg leg-a">A</span>
+        <span class="leg leg-b">B</span>
+        <span class="leg leg-k">K key</span>
+        <span class="leg leg-d">D door</span>
+        <span class="leg leg-e">E exit</span>
+        <span class="leg leg-wall">▪ wall</span>
+      </div>
+      <div class="dungeon-container" id="dungeon-container">
+        <div class="dungeon-placeholder">Dungeon will appear here when a run starts.</div>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- ── Past runs ──────────────────────────────────────────────────────── -->
+  <div class="past-runs" id="past-runs">
+    <div class="panel-title">Past runs</div>
+    <div id="runs-table-wrap">Loading…</div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let runId        = null;
+let evtSource    = null;
+let divergeCount = 0;
+let totalTurns   = 0;
+const trailPts   = { A: [], B: [] };  // SVG coordinate history per agent
+let worldData    = null;              // world_init payload
+const MILESTONES = {};                // { key_picked: turn, door_open: turn, ... }
+
+// SVG layout constants
+const CELL = 36, GAP = 2, STEP = CELL + GAP;
+const NS = "http://www.w3.org/2000/svg";
+
+// ── Run control ──────────────────────────────────────────────────────────────
+function startRun() {
+  const seed      = parseInt(document.getElementById("seed-input").value) || null;
+  const maxTurns  = parseInt(document.getElementById("turns-input").value) || 100;
+
+  // Reset UI
+  document.getElementById("event-log").innerHTML = "";
+  document.getElementById("milestones").innerHTML = "";
+  document.getElementById("divergence-counter").classList.add("hidden");
+  document.getElementById("turn-counter").textContent = "Turn 0";
+  document.getElementById("run-id-label").textContent = "";
+  document.getElementById("download-btn").disabled = true;
+  document.getElementById("run-btn").disabled = true;
+  document.getElementById("run-btn").textContent = "⏳ Running…";
+  document.getElementById("dungeon-container").innerHTML =
+    '<div class="dungeon-placeholder">Connecting…</div>';
+  divergeCount = 0;
+  totalTurns   = 0;
+  trailPts.A   = [];
+  trailPts.B   = [];
+  worldData    = null;
+  Object.keys(MILESTONES).forEach(k => delete MILESTONES[k]);
+  setBadge("running");
+
+  // Open SSE first, then trigger run
+  if (evtSource) evtSource.close();
+  evtSource = new EventSource("/stream");
+  evtSource.onmessage = handleSSE;
+  evtSource.onerror   = () => {
+    setBadge("error");
+    document.getElementById("run-btn").disabled = false;
+    document.getElementById("run-btn").textContent = "▶ Run";
+  };
+
+  fetch("/start", {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ seed, max_turns: maxTurns }),
+  });
+}
+
+function downloadJSON() {
+  if (runId) window.location = "/download/" + runId.slice(0, 8);
+}
+
+// ── SSE handler ──────────────────────────────────────────────────────────────
+function handleSSE(e) {
+  let data;
+  try { data = JSON.parse(e.data); } catch { return; }
+  if (data.type === "ping")       return;
+  if (data.type === "world_init") onWorldInit(data);
+  else if (data.type === "turn")  onTurn(data);
+  else if (data.type === "run_end") onRunEnd(data);
+}
+
+// ── world_init ────────────────────────────────────────────────────────────────
+function onWorldInit(data) {
+  worldData = data;
+  runId     = data.run_id;
+  document.getElementById("run-id-label").textContent = data.run_id.slice(0, 8);
+  buildSVG(data);
+}
+
+// ── turn ──────────────────────────────────────────────────────────────────────
+function onTurn(data) {
+  totalTurns = data.turn + 1;
+  document.getElementById("turn-counter").textContent = `Turn ${data.turn}`;
+
+  updateSVG(data);
+  appendLogEntry(data);
+  checkMilestones(data);
+  trackDivergences(data);
+}
+
+// ── run_end ───────────────────────────────────────────────────────────────────
+function onRunEnd(data) {
+  setBadge(data.outcome);
+  document.getElementById("run-btn").disabled  = false;
+  document.getElementById("run-btn").textContent = "▶ Run";
+  document.getElementById("download-btn").disabled = false;
+  evtSource.close();
+
+  // End-of-run banner in log
+  const banner = document.createElement("div");
+  banner.className = `log-banner log-banner--${data.outcome}`;
+  banner.innerHTML = `
+    <strong>${outcomeLabel(data.outcome)}</strong>
+    <span>${data.total_turns} turns · ${divergeCount} divergence${divergeCount !== 1 ? "s" : ""} detected</span>
+  `;
+  document.getElementById("event-log").appendChild(banner);
+  scrollLog();
+
+  loadRunHistory();
+}
+
+// ── SVG dungeon ───────────────────────────────────────────────────────────────
+function buildSVG(data) {
+  const container = document.getElementById("dungeon-container");
+  container.innerHTML = "";
+
+  const n    = data.size;
+  const dim  = n * STEP + GAP;
+  const svg  = document.createElementNS(NS, "svg");
+  svg.id = "dungeon-svg";
+  svg.setAttribute("width",   dim);
+  svg.setAttribute("height",  dim);
+  svg.setAttribute("viewBox", `0 0 ${dim} ${dim}`);
+
+  // Layer order: bg → trails → agents
+  ["layer-bg", "layer-trail-A", "layer-trail-B", "layer-agents"].forEach(id => {
+    const g = document.createElementNS(NS, "g");
+    g.id = id;
+    svg.appendChild(g);
+  });
+
+  // Draw static grid
+  const bg = svg.querySelector("#layer-bg");
+  data.grid.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      const rect = makeSVGRect(c * STEP + GAP, r * STEP + GAP, CELL, CELL, cellBg(cell));
+      rect.id = `cell-${r}-${c}`;
+      bg.appendChild(rect);
+
+      // Label for special cells
+      if ("KDOEkdoe".includes(cell) && cell !== ".") {
+        const txt = makeSVGText(cellCx(c), cellCy(r), cell.toUpperCase(), cellFg(cell));
+        bg.appendChild(txt);
+      }
+    });
+  });
+
+  // Initial agent positions
+  const agLayer = svg.querySelector("#layer-agents");
+  ["A", "B"].forEach(id => {
+    const pos  = data.agent_positions[id];
+    const [cx, cy] = toCXY(pos);
+    trailPts[id] = [[cx, cy]];
+
+    const circle = document.createElementNS(NS, "circle");
+    circle.id = `agent-${id}`;
+    circle.setAttribute("cx", cx);
+    circle.setAttribute("cy", cy);
+    circle.setAttribute("r",  11);
+    circle.setAttribute("fill",         agentColor(id));
+    circle.setAttribute("stroke",       "#0f1117");
+    circle.setAttribute("stroke-width", "2");
+    agLayer.appendChild(circle);
+
+    const label = makeSVGText(cx, cy + 1, id, "#0f1117", "bold");
+    label.id = `agent-label-${id}`;
+    agLayer.appendChild(label);
+  });
+
+  container.appendChild(svg);
+}
+
+function updateSVG(data) {
+  const svg = document.getElementById("dungeon-svg");
+  if (!svg) return;
+
+  const positions = data.world_truth?.agent_positions || {};
+  const agLayer   = svg.querySelector("#layer-agents");
+
+  // Move agent markers and extend trails
+  ["A", "B"].forEach(id => {
+    const pos = positions[id];
+    if (!pos) return;
+    const [cx, cy] = toCXY(pos);
+    trailPts[id].push([cx, cy]);
+
+    // Update marker
+    const circle = svg.querySelector(`#agent-${id}`);
+    const label  = svg.querySelector(`#agent-label-${id}`);
+    if (circle) { circle.setAttribute("cx", cx); circle.setAttribute("cy", cy); }
+    if (label)  { label.setAttribute("x", cx);   label.setAttribute("y", cy + 1); }
+
+    // Redraw trail (last 30 segments, fading)
+    const trailLayer = svg.querySelector(`#layer-trail-${id}`);
+    trailLayer.innerHTML = "";
+    const pts = trailPts[id];
+    const max = Math.min(pts.length, 30);
+    for (let i = pts.length - max; i < pts.length - 1; i++) {
+      const [x1, y1] = pts[i];
+      const [x2, y2] = pts[i + 1];
+      const opacity  = 0.15 + 0.5 * ((i - (pts.length - max)) / max);
+      const line = document.createElementNS(NS, "line");
+      line.setAttribute("x1", x1); line.setAttribute("y1", y1);
+      line.setAttribute("x2", x2); line.setAttribute("y2", y2);
+      line.setAttribute("stroke",        agentColor(id));
+      line.setAttribute("stroke-width",  "2.5");
+      line.setAttribute("opacity",       opacity.toFixed(2));
+      line.setAttribute("stroke-linecap","round");
+      trailLayer.appendChild(line);
+    }
+  });
+
+  // Update cell if key was picked up
+  const kLoc = data.world_truth?.key_location;
+  if (!kLoc && worldData?.key_pos) {
+    const [r, c] = worldData.key_pos;
+    const rect = svg.querySelector(`#cell-${r}-${c}`);
+    if (rect) rect.setAttribute("fill", cellBg("."));
+    // Remove K label (next sibling text node)
+    const txt = svg.querySelector(`#lbl-${r}-${c}`);
+    if (txt) txt.remove();
+    worldData.key_pos = null;
+  }
+
+  // Update door cell if unlocked
+  if (data.world_truth?.door_unlocked && worldData?.door_pos) {
+    const [r, c] = worldData.door_pos;
+    const rect = svg.querySelector(`#cell-${r}-${c}`);
+    if (rect) rect.setAttribute("fill", cellBg("O"));
+    worldData.door_pos = null; // don't update again
+  }
+}
+
+// ── Log entry ─────────────────────────────────────────────────────────────────
+function appendLogEntry(data) {
+  const log     = document.getElementById("event-log");
+  const isEmpty = log.querySelector(".log-empty");
+  if (isEmpty) isEmpty.remove();
+
+  const hasDivergence  = data.divergences && data.divergences.length > 0;
+  const success        = data.result?.success !== false;
+  const isMsgTool      = data.action?.tool === "send_message";
+  const isRepeatFail   = (data.extra?.repeat_failures || 0) >= 3;
+
+  const entry = document.createElement("div");
+  entry.className = [
+    "log-entry",
+    hasDivergence  ? "log-entry--diverge"     : "",
+    isRepeatFail   ? "log-entry--stuck"        : "",
+    isMsgTool      ? "log-entry--msg"          : "",
+  ].filter(Boolean).join(" ");
+
+  // ── Main row
+  const argStr = fmtArgs(data.action?.args);
+  const resultStr = success
+    ? `<span class="ok">✓</span> ${fmtResult(data.result)}`
+    : `<span class="fail">✗</span> <span class="fail-reason">${data.result?.reason || "failed"}</span>`;
+
+  entry.innerHTML = `
+    <div class="log-row">
+      <span class="log-turn">${data.turn}</span>
+      <span class="log-agent agent-${data.agent}">${data.agent}</span>
+      <span class="log-tool">${data.action?.tool || "—"}</span>
+      <span class="log-args">${argStr}</span>
+      <span class="log-result">${resultStr}</span>
+      ${data.latency_ms ? `<span class="log-latency">${data.latency_ms}ms</span>` : ""}
+    </div>
+    ${hasDivergence ? renderDivergences(data.divergences) : ""}
+    ${isRepeatFail  ? '<div class="log-warn">⚠ Stuck — same action failing repeatedly</div>' : ""}
+    ${isMsgTool && success ? renderMsgNote(data) : ""}
+    ${data.belief_state?.messages_received?.length
+      ? renderMsgReceived(data.belief_state.messages_received) : ""}
+  `;
+
+  log.appendChild(entry);
+  scrollLog();
+}
+
+function renderDivergences(divs) {
+  return divs.map(d => `
+    <div class="log-diverge">
+      <span class="div-icon">⚑</span>
+      <span class="div-type">${d.type.replace(/_/g," ")}</span>
+      <span class="div-believed">believed <code>${JSON.stringify(d.believed)}</code></span>
+      <span class="div-truth">truth <code>${JSON.stringify(d.truth)}</code></span>
+    </div>`).join("");
+}
+
+function renderMsgNote(data) {
+  const text = data.action?.args?.text || "";
+  const to   = data.agent === "A" ? "B" : "A";
+  return `<div class="log-msg-note">→ Agent ${to} will receive this next turn: <em>"${text}"</em></div>`;
+}
+
+function renderMsgReceived(msgs) {
+  return msgs.map(m =>
+    `<div class="log-msg-received">📨 <em>${m}</em></div>`
+  ).join("");
+}
+
+// ── Milestones ────────────────────────────────────────────────────────────────
+function checkMilestones(data) {
+  const wt  = data.world_truth || {};
+  const res = data.result || {};
+  const bar = document.getElementById("milestones");
+
+  if (!MILESTONES.key_picked && res.item === "key") {
+    MILESTONES.key_picked = data.turn;
+    addMilestone(bar, `Key ✓ t${data.turn}`, "ms-key");
+  }
+  if (!MILESTONES.door_open && wt.door_unlocked) {
+    MILESTONES.door_open = data.turn;
+    addMilestone(bar, `Door ✓ t${data.turn}`, "ms-door");
+  }
+  if (!MILESTONES[`exit_${data.agent}`] && wt.agent_positions) {
+    const pos  = wt.agent_positions[data.agent];
+    const exit = wt.exit_location;
+    if (exit && pos && pos[0] === exit[0] && pos[1] === exit[1]) {
+      MILESTONES[`exit_${data.agent}`] = data.turn;
+      addMilestone(bar, `${data.agent} exit t${data.turn}`, "ms-exit");
+    }
+  }
+}
+
+function addMilestone(bar, label, cls) {
+  const el = document.createElement("span");
+  el.className = `milestone ${cls}`;
+  el.textContent = label;
+  bar.appendChild(el);
+}
+
+// ── Divergence counter ────────────────────────────────────────────────────────
+function trackDivergences(data) {
+  if (data.divergences && data.divergences.length > 0) {
+    divergeCount += data.divergences.length;
+    const el = document.getElementById("divergence-counter");
+    el.textContent = `${divergeCount} divergence${divergeCount !== 1 ? "s" : ""}`;
+    el.classList.remove("hidden");
+  }
+}
+
+// ── Past runs ─────────────────────────────────────────────────────────────────
+function loadRunHistory() {
+  fetch("/api/runs").then(r => r.json()).then(runs => {
+    const wrap = document.getElementById("runs-table-wrap");
+    if (!runs.length) { wrap.innerHTML = "<p class='empty'>No runs yet.</p>"; return; }
+    wrap.innerHTML = `
+      <table class="runs-table">
+        <thead><tr>
+          <th>Run ID</th><th>Outcome</th><th>Turns</th><th>Divergences</th><th></th>
+        </tr></thead>
+        <tbody>${runs.map(r => `
+          <tr>
+            <td class="mono">${r.run_id.slice(0,8)}</td>
+            <td><span class="badge badge--${r.outcome}">${r.outcome}</span></td>
+            <td>${r.total_turns}</td>
+            <td class="${r.divergences > 0 ? "warn" : ""}">${r.divergences}</td>
+            <td><a class="btn-small" href="/download/${r.run_id.slice(0,8)}">↓ JSON</a></td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  });
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toCXY([r, c]) {
+  return [c * STEP + GAP + CELL / 2, r * STEP + GAP + CELL / 2];
+}
+function cellCx(c) { return c * STEP + GAP + CELL / 2; }
+function cellCy(r) { return r * STEP + GAP + CELL / 2; }
+
+function cellBg(c) {
+  return { "#": "#252832", ".": "#0d1018", "K": "#332e10",
+           "D": "#33100f", "O": "#0f3320", "E": "#0f1f3d" }[c] || "#0d1018";
+}
+function cellFg(c) {
+  return { "K": "#e0b84a", "D": "#e05c5c", "O": "#4caf82", "E": "#6c8cf5" }[c] || "#d4d8e8";
+}
+function agentColor(id) { return id === "A" ? "#7eb8f7" : "#b07ef7"; }
+
+function makeSVGRect(x, y, w, h, fill) {
+  const r = document.createElementNS(NS, "rect");
+  r.setAttribute("x", x); r.setAttribute("y", y);
+  r.setAttribute("width", w); r.setAttribute("height", h);
+  r.setAttribute("fill", fill); r.setAttribute("rx", 3);
+  return r;
+}
+function makeSVGText(x, y, text, fill, weight = "600") {
+  const t = document.createElementNS(NS, "text");
+  t.setAttribute("x", x); t.setAttribute("y", y);
+  t.setAttribute("fill", fill);
+  t.setAttribute("font-size", "13");
+  t.setAttribute("font-weight", weight);
+  t.setAttribute("font-family", "SF Mono, Fira Code, monospace");
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "middle");
+  t.textContent = text;
+  return t;
+}
+
+function fmtArgs(args) {
+  if (!args || !Object.keys(args).length) return "";
+  return Object.entries(args).map(([k, v]) => `<span class="arg-val">${v}</span>`).join(" ");
+}
+function fmtResult(result) {
+  if (!result) return "";
+  if (result.item)         return `picked up <strong>${result.item}</strong>`;
+  if (result.new_position) return `→ [${result.new_position}]`;
+  if (result.result)       return result.result;
+  if (result.delivered_to) return `→ Agent ${result.delivered_to} (next turn)`;
+  return "";
+}
+function outcomeLabel(o) {
+  return { success: "✓ Both agents reached the exit", turn_limit: "Turn limit reached",
+           stuck: "Agents stuck" }[o] || o;
+}
+
+function setBadge(state) {
+  const el = document.getElementById("status-badge");
+  el.textContent = state;
+  el.className   = `badge badge--${state.replace(" ", "_")}`;
+}
+function scrollLog() {
+  const log = document.getElementById("event-log");
+  log.scrollTop = log.scrollHeight;
+}
+
+// Init
+loadRunHistory();
+</script>
 </body>
 </html>

@@ -200,6 +200,13 @@ class DungeonWorld:
             "inventories": {k: list(v) for k, v in self.agent_inventories.items()},
         }
 
+    def grid_layout(self) -> list:
+        """Serialize grid as 2D list of cell characters for the browser."""
+        return [
+            [cell.value if hasattr(cell, 'value') else str(cell) for cell in row]
+            for row in self.grid
+        ]
+
     def is_at_exit(self, agent_id: str) -> bool:
         return self.agent_positions[agent_id] == self.exit_pos
 
