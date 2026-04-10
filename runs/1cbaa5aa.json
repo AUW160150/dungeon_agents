@@ -1,0 +1,366 @@
+{
+  "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+  "seed": 42,
+  "events": [
+    {
+      "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+      "event_id": "cf329c98-cd0f-42a4-a072-4cbf2c0e9223",
+      "turn": 0,
+      "agent": "DM",
+      "phase": "dm_response",
+      "timestamp": "2026-04-10T09:51:23.916009+00:00",
+      "action": {
+        "tool": "ask_dm",
+        "asker": "A",
+        "question": "Where is the key, door, and exit? Give row and col for each."
+      },
+      "result": {
+        "answer": "The key is at [7, 5], the door is locked at [8, 1], and the exit is at [6, 3]. Please note this data is 0 turn(s) old."
+      },
+      "belief_state": {},
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            3
+          ],
+          "B": [
+            6,
+            6
+          ]
+        },
+        "key_location": [
+          7,
+          5
+        ],
+        "door_location": [
+          8,
+          1
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          6,
+          3
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1931,
+      "extra": {
+        "actual_staleness": 0,
+        "configured_staleness": 5,
+        "stale_snapshot": {
+          "agent_positions": {
+            "A": [
+              2,
+              3
+            ],
+            "B": [
+              6,
+              6
+            ]
+          },
+          "key_location": [
+            7,
+            5
+          ],
+          "door_location": [
+            8,
+            1
+          ],
+          "door_unlocked": false,
+          "exit_location": [
+            6,
+            3
+          ],
+          "inventories": {
+            "A": [],
+            "B": []
+          }
+        }
+      }
+    },
+    {
+      "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+      "event_id": "c93f448c-d6a3-4492-b493-7fc7dc55ed33",
+      "turn": 0,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T09:51:23.920686+00:00",
+      "action": {
+        "tool": "ask_dm",
+        "args": {
+          "question": "Where is the key, door, and exit? Give row and col for each."
+        }
+      },
+      "result": {
+        "success": true,
+        "queued_for": "A",
+        "on_turn": "next",
+        "staleness": 0
+      },
+      "belief_state": {
+        "position": [
+          2,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "1,2": "#",
+          "1,3": ".",
+          "1,4": ".",
+          "2,2": ".",
+          "2,3": ".",
+          "2,4": ".",
+          "3,2": "#",
+          "3,3": ".",
+          "3,4": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            3
+          ],
+          "B": [
+            6,
+            6
+          ]
+        },
+        "key_location": [
+          7,
+          5
+        ],
+        "door_location": [
+          8,
+          1
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          6,
+          3
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1512,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [
+            "[Dungeon Master, 0 turns stale]: The key is at [7, 5], the door is locked at [8, 1], and the exit is at [6, 3]. Please note this data is 0 turn(s) old."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+      "event_id": "27a167e3-ebd8-4dc8-910d-3e3ead5db753",
+      "turn": 1,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T09:51:24.730164+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          7,
+          6
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          6,
+          6
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "5,5": ".",
+          "5,6": ".",
+          "5,7": ".",
+          "6,5": ".",
+          "6,6": ".",
+          "6,7": ".",
+          "7,5": "K",
+          "7,6": ".",
+          "7,7": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            3
+          ],
+          "B": [
+            6,
+            6
+          ]
+        },
+        "key_location": [
+          7,
+          5
+        ],
+        "door_location": [
+          8,
+          1
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          6,
+          3
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 807,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [
+            "[Dungeon Master, 0 turns stale]: The key is at [7, 5], the door is locked at [8, 1], and the exit is at [6, 3]. Please note this data is 0 turn(s) old."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+      "event_id": "4d600a17-c6e0-4973-a038-d47c884752a3",
+      "turn": 2,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T09:51:25.705437+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          3,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          2,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "1,2": "#",
+          "1,3": ".",
+          "1,4": ".",
+          "2,2": ".",
+          "2,3": ".",
+          "2,4": ".",
+          "3,2": "#",
+          "3,3": ".",
+          "3,4": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": [
+          "[Dungeon Master, 0 turns stale]: The key is at [7, 5], the door is locked at [8, 1], and the exit is at [6, 3]. Please note this data is 0 turn(s) old."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            3
+          ],
+          "B": [
+            7,
+            6
+          ]
+        },
+        "key_location": [
+          7,
+          5
+        ],
+        "door_location": [
+          8,
+          1
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          6,
+          3
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 974,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "1cbaa5aa-8145-433f-96b7-238fedaa8221",
+      "event_id": "626b64a8-d434-450d-891f-29b6b2e40662",
+      "turn": 3,
+      "agent": "system",
+      "phase": "run_end",
+      "timestamp": "2026-04-10T09:51:25.706505+00:00",
+      "outcome": "turn_limit",
+      "total_turns": 3,
+      "action": null,
+      "result": null,
+      "belief_state": {},
+      "world_truth": {},
+      "divergences": [],
+      "latency_ms": null
+    }
+  ],
+  "analysis": {
+    "what_happened": "In the first three turns, Agent A asked the DM for information about the location of the key, door, and exit but did not receive feedback due to the information being stale. Agent A moved once, while Agent B only moved once without attempting to communicate with Agent A. No key was found, the door remained locked, and neither agent progressed towards the exit.",
+    "why_it_happened": "The agents did not communicate at all, resulting in a lack of coordination, which was crucial for finding the key and unlocking the door. Additionally, the DM's outdated world state may have contributed to ineffective decision-making from Agent A. This reflects an interaction failure between agents, particularly notable in the longest coordination silence of 2 turns without any inter-agent message.",
+    "failure_type": "interaction",
+    "what_should_change": "- Introduce a mandatory messaging protocol after certain actions, encouraging agents to communicate their findings and intentions. \n- Adjust the DM's response mechanism to provide current state updates or suggest that it will provide stale information to set expectations. \n- Implement a shared state or visualization for both agents, allowing them to comprehend their relative positions and objectives dynamically.",
+    "trace_summary": "Outcome: turn_limit after 3 turns\n\nAgent tool usage:\n  A: {'ask_dm': 1, 'move': 1}\n  B: {'move': 1}\n\nKey milestones: NONE \u2014 key never found, door never unlocked\n\nInter-agent messages sent: 0\n  NONE \u2014 agents never communicated at all\n\nLongest coordination silence: 2 turns without any inter-agent message\nLongest stagnation \u2014 A: 0 turns without moving, B: 0 turns without moving\n\nAction failures (0 total, sample):\n\nSchema divergences (belief vs truth, 0 total, sample):\n\nDM interactions: 1\n  T0 asked by A: Q=Where is the key, door, and exit? Give row and col for each. | staleness=? | info_wrong=False"
+  }
+}

@@ -222,18 +222,24 @@ class Agent:
         ]
 
         start = time.time()
-        response = _client.chat.completions.create(
-            model=self.model,
-            messages=messages,
-            tools=TOOLS,
-            tool_choice="required",
-        )
-        latency_ms = int((time.time() - start) * 1000)
+        try:
+            response = _client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                tools=TOOLS,
+                tool_choice="required",
+                timeout=30,
+            )
+            latency_ms = int((time.time() - start) * 1000)
+            raw_response = response.model_dump_json()
+            choice       = response.choices[0]
+            tool_call = choice.message.tool_calls[0] if choice.message.tool_calls else None
+        except Exception as e:
+            latency_ms   = int((time.time() - start) * 1000)
+            raw_response = f'{{"error": "{e}"}}'
+            print(f"  [agent {self.agent_id}] LLM call failed ({latency_ms}ms): {e} — defaulting to look")
+            tool_call = None
 
-        raw_response = response.model_dump_json()
-        choice       = response.choices[0]
-
-        tool_call = choice.message.tool_calls[0] if choice.message.tool_calls else None
         if tool_call is None:
             tool_dict = {"tool": "look", "args": {}}
         else:

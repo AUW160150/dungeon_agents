@@ -172,6 +172,7 @@ def generate(events: list) -> dict:
         messages=[{"role": "user", "content": PROMPT.format(summary=summary)}],
         response_format={"type": "json_object"},
         max_tokens=700,
+        timeout=30,
     )
 
     result = json.loads(response.choices[0].message.content)
