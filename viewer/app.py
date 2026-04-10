@@ -39,8 +39,9 @@ def start_run():
         return jsonify({"error": "A run is already in progress"}), 409
 
     data = request.get_json(silent=True) or {}
-    seed      = data.get("seed")      or random.randint(0, 9999)
-    max_turns = data.get("max_turns") or 100
+    seed           = data.get("seed")           or random.randint(0, 9999)
+    max_turns      = data.get("max_turns")      or 100
+    dm_stale_turns = data.get("dm_stale_turns") or 5
 
     # Drain any stale events from a previous run
     while not _event_queue.empty():
@@ -58,6 +59,7 @@ def start_run():
             run_id, outcome, path = simulate(
                 seed=seed,
                 max_turns=max_turns,
+                dm_stale_turns=dm_stale_turns,
                 on_event=_event_queue.put,
             )
             _run_state["run_id"] = run_id

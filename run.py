@@ -17,6 +17,7 @@ from world import DungeonWorld
 from agents import Agent
 from game_loop import GameLoop
 from tracer import Tracer
+from dm_agent import DungeonMaster
 
 RUNS_DIR = Path(__file__).parent / "runs"
 
@@ -24,6 +25,7 @@ RUNS_DIR = Path(__file__).parent / "runs"
 def simulate(
     seed: Optional[int] = None,
     max_turns: int = 100,
+    dm_stale_turns: int = 5,
     on_event: Optional[Callable] = None,
 ) -> tuple:
     """
@@ -37,6 +39,7 @@ def simulate(
     agent_a = Agent("A")
     agent_b = Agent("B")
     tracer  = Tracer()
+    dm      = DungeonMaster(stale_turns=dm_stale_turns)
 
     # Emit world initialisation event so the browser can draw the grid
     if on_event:
@@ -50,9 +53,10 @@ def simulate(
             "key_pos":  list(world.key_pos)  if world.key_pos  else None,
             "door_pos": list(world.door_pos) if world.door_pos else None,
             "exit_pos": list(world.exit_pos) if world.exit_pos else None,
+            "dm_stale_turns": dm_stale_turns,
         })
 
-    loop = GameLoop(world, agent_a, agent_b, tracer, max_turns=max_turns, on_event=on_event)
+    loop = GameLoop(world, agent_a, agent_b, tracer, max_turns=max_turns, dm=dm, on_event=on_event)
     outcome = loop.run()
 
     RUNS_DIR.mkdir(exist_ok=True)
@@ -67,12 +71,13 @@ def main():
     parser.add_argument("--seed",      type=int, default=None)
     parser.add_argument("--runs",      type=int, default=1)
     parser.add_argument("--max-turns", type=int, default=100)
+    parser.add_argument("--dm-stale",  type=int, default=5)
     args = parser.parse_args()
 
     for i in range(args.runs):
         seed = args.seed if args.seed is not None else random.randint(0, 9999)
         print(f"\n--- Run {i+1}/{args.runs}  seed={seed} ---")
-        run_id, outcome, path = simulate(seed=seed, max_turns=args.max_turns)
+        run_id, outcome, path = simulate(seed=seed, max_turns=args.max_turns, dm_stale_turns=args.dm_stale)
         print(f"Saved: {path}")
 
 

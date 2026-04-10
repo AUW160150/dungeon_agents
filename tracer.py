@@ -133,6 +133,65 @@ class Tracer:
             _lf.flush()
 
     # ------------------------------------------------------------------
+    # DM interaction logging
+    # ------------------------------------------------------------------
+
+    def log_dm_interaction(
+        self,
+        *,
+        turn: int,
+        asker: str,
+        question: str,
+        dm_result: dict,
+        current_truth: dict,
+    ) -> dict:
+        """
+        Log a DM question/answer pair.
+        Detects where the DM's stale snapshot diverges from current world truth
+        — these are the "reasonable decision, wrong info" moments.
+        """
+        divergences = _detect_dm_divergences(dm_result["stale_snapshot"], current_truth)
+
+        event = {
+            "run_id":     self.run_id,
+            "event_id":   str(uuid.uuid4()),
+            "turn":       turn,
+            "agent":      "DM",
+            "phase":      "dm_response",
+            "timestamp":  datetime.now(timezone.utc).isoformat(),
+            "action":     {"tool": "ask_dm", "asker": asker, "question": question},
+            "result":     {"answer": dm_result["answer"]},
+            "belief_state": {},
+            "world_truth":  current_truth,
+            "divergences":  divergences,
+            "latency_ms":   dm_result["latency_ms"],
+            "extra": {
+                "actual_staleness":     dm_result["actual_staleness"],
+                "configured_staleness": dm_result["configured_staleness"],
+                "stale_snapshot":       dm_result["stale_snapshot"],
+            },
+        }
+        self.events.append(event)
+
+        if LANGFUSE_ENABLED:
+            obs = _lf.start_observation(
+                name=f"dm-turn-{turn}-asked-by-{asker}",
+                as_type="generation",
+                input=question,
+                output=dm_result["answer"],
+                model="gpt-4o-mini",
+                metadata={
+                    "turn": turn,
+                    "asker": asker,
+                    "actual_staleness": dm_result["actual_staleness"],
+                    "divergences": divergences,
+                },
+            )
+            obs.end()
+
+        return event
+
+    # ------------------------------------------------------------------
     # Persistence
     # ------------------------------------------------------------------
 
@@ -196,5 +255,48 @@ def _detect_divergences(belief: dict, truth: dict, agent: str) -> list[dict]:
             "believed": "key visible",
             "truth": "key already picked up",
         })
+
+    return divergences
+
+
+def _detect_dm_divergences(stale: dict, truth: dict) -> list[dict]:
+    """
+    Compare the DM's stale world snapshot against current truth.
+    These divergences show what the DM got wrong — and therefore what
+    advice it may have given that was factually incorrect.
+    """
+    divergences = []
+
+    # Key location
+    s_key = stale.get("key_location")
+    t_key = truth.get("key_location")
+    if s_key != t_key:
+        divergences.append({
+            "type": "dm_stale_key_location",
+            "stale": s_key,
+            "truth": t_key,
+            "note": "Key was picked up after DM's last observation" if s_key and not t_key else "",
+        })
+
+    # Door state
+    s_door = stale.get("door_unlocked", False)
+    t_door = truth.get("door_unlocked", False)
+    if s_door != t_door:
+        divergences.append({
+            "type": "dm_stale_door_state",
+            "stale": "unlocked" if s_door else "locked",
+            "truth": "unlocked" if t_door else "locked",
+        })
+
+    # Agent positions
+    for aid in ["A", "B"]:
+        s_pos = stale.get("agent_positions", {}).get(aid)
+        t_pos = truth.get("agent_positions", {}).get(aid)
+        if s_pos and t_pos and list(s_pos) != list(t_pos):
+            divergences.append({
+                "type": f"dm_stale_agent_{aid}_position",
+                "stale": s_pos,
+                "truth": t_pos,
+            })
 
     return divergences

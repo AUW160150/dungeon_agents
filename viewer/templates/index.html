@@ -22,6 +22,10 @@
       <label class="ctrl-label">Max turns
         <input id="turns-input" type="number" value="100" min="10" max="500" />
       </label>
+      <label class="ctrl-label">DM staleness
+        <input id="stale-input" type="number" value="5" min="1" max="50"
+               title="How many turns behind the Dungeon Master's world state is" />
+      </label>
       <button id="run-btn" class="btn-run" onclick="startRun()">▶ Run</button>
     </div>
   </header>
@@ -58,6 +62,7 @@
       <div class="dungeon-legend">
         <span class="leg leg-a">A</span>
         <span class="leg leg-b">B</span>
+        <span class="leg leg-dm">◆ DM</span>
         <span class="leg leg-k">K key</span>
         <span class="leg leg-d">D door</span>
         <span class="leg leg-e">E exit</span>
@@ -94,8 +99,9 @@ const NS = "http://www.w3.org/2000/svg";
 
 // ── Run control ──────────────────────────────────────────────────────────────
 function startRun() {
-  const seed      = parseInt(document.getElementById("seed-input").value) || null;
-  const maxTurns  = parseInt(document.getElementById("turns-input").value) || 100;
+  const seed         = parseInt(document.getElementById("seed-input").value) || null;
+  const maxTurns     = parseInt(document.getElementById("turns-input").value) || 100;
+  const dmStaleTurns = parseInt(document.getElementById("stale-input").value) || 5;
 
   // Reset UI
   document.getElementById("event-log").innerHTML = "";
@@ -129,7 +135,7 @@ function startRun() {
   fetch("/start", {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ seed, max_turns: maxTurns }),
+    body:    JSON.stringify({ seed, max_turns: maxTurns, dm_stale_turns: dmStaleTurns }),
   });
 }
 
@@ -141,17 +147,19 @@ function downloadJSON() {
 function handleSSE(e) {
   let data;
   try { data = JSON.parse(e.data); } catch { return; }
-  if (data.type === "ping")       return;
-  if (data.type === "world_init") onWorldInit(data);
-  else if (data.type === "turn")  onTurn(data);
-  else if (data.type === "run_end") onRunEnd(data);
+  if (data.type === "ping")            return;
+  if (data.type === "world_init")      onWorldInit(data);
+  else if (data.type === "turn")       onTurn(data);
+  else if (data.type === "dm_interaction") onDMInteraction(data);
+  else if (data.type === "run_end")    onRunEnd(data);
 }
 
 // ── world_init ────────────────────────────────────────────────────────────────
 function onWorldInit(data) {
   worldData = data;
   runId     = data.run_id;
-  document.getElementById("run-id-label").textContent = data.run_id.slice(0, 8);
+  document.getElementById("run-id-label").textContent =
+    `${data.run_id.slice(0, 8)} · DM staleness: ${data.dm_stale_turns}t`;
   buildSVG(data);
 }
 
@@ -164,6 +172,48 @@ function onTurn(data) {
   appendLogEntry(data);
   checkMilestones(data);
   trackDivergences(data);
+}
+
+// ── dm_interaction ────────────────────────────────────────────────────────────
+function onDMInteraction(data) {
+  appendDMEntry(data);
+  trackDivergences(data);   // reuse divergence counter
+}
+
+function appendDMEntry(data) {
+  pulseDM();
+  const log = document.getElementById("event-log");
+  const hasDivergence = data.divergences && data.divergences.length > 0;
+
+  const entry = document.createElement("div");
+  entry.className = [
+    "log-entry log-entry--dm",
+    hasDivergence ? "log-entry--diverge" : "",
+  ].filter(Boolean).join(" ");
+
+  entry.innerHTML = `
+    <div class="log-row">
+      <span class="log-turn">${data.turn}</span>
+      <span class="log-agent agent-DM">◆ DM</span>
+      <span class="log-tool">ask_dm</span>
+      <span class="log-args">asked by <span class="agent-${data.asker}">${data.asker}</span></span>
+      <span class="log-latency">${data.latency_ms}ms</span>
+    </div>
+    <div class="dm-exchange">
+      <div class="dm-q"><span class="dm-label">Q</span><em>${data.question}</em></div>
+      <div class="dm-a">
+        <span class="dm-label">A</span>
+        <span>${data.answer}</span>
+        <span class="dm-stale ${hasDivergence ? "dm-stale--wrong" : ""}">
+          T-${data.actual_staleness} stale
+        </span>
+      </div>
+    </div>
+    ${hasDivergence ? renderDivergences(data.divergences) : ""}
+  `;
+
+  log.appendChild(entry);
+  scrollLog();
 }
 
 // ── run_end ───────────────────────────────────────────────────────────────────
@@ -245,7 +295,26 @@ function buildSVG(data) {
     agLayer.appendChild(label);
   });
 
+  // DM observer badge — floats outside the grid in the top-right corner
+  const dmGroup = document.createElementNS(NS, "g");
+  dmGroup.id = "dm-badge";
+  const dmRect = makeSVGRect(dim - 52, 4, 48, 20, "rgba(224,145,74,0.15)");
+  dmRect.setAttribute("rx", 4);
+  const dmText = makeSVGText(dim - 28, 14, "◆ DM", "#e0914a", "700");
+  dmText.setAttribute("font-size", "11");
+  dmGroup.appendChild(dmRect);
+  dmGroup.appendChild(dmText);
+  svg.appendChild(dmGroup);
+
   container.appendChild(svg);
+}
+
+// Pulse the DM badge when it responds
+function pulseDM() {
+  const badge = document.getElementById("dm-badge");
+  if (!badge) return;
+  badge.style.opacity = "0.4";
+  setTimeout(() => { badge.style.opacity = "1"; }, 400);
 }
 
 function updateSVG(data) {

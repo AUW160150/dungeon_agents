@@ -313,8 +313,56 @@ code, pre { font-family: var(--font); font-size: 0.85em; }
   font-size: 0.8rem;
 }
 
-.agent-A { color: var(--agent-a); }
-.agent-B { color: var(--agent-b); }
+.agent-A  { color: var(--agent-a); }
+.agent-B  { color: var(--agent-b); }
+.agent-DM { color: #e0914a; }
+
+/* ── DM legend item ────────────────────────────────────────────────────────── */
+.leg-dm { background: rgba(224,145,74,0.15); color: #e0914a; }
+
+/* ── DM log entry ──────────────────────────────────────────────────────────── */
+.log-entry--dm { border-left-color: #e0914a; }
+
+.dm-exchange {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  padding-left: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.dm-q, .dm-a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.dm-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(224,145,74,0.2);
+  color: #e0914a;
+  padding: 0.05rem 0.35rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.dm-q em { color: var(--dim); font-style: italic; }
+.dm-a span { color: var(--text); }
+
+.dm-stale {
+  font-size: 0.68rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 2px;
+  background: rgba(224,145,74,0.1);
+  color: #e0914a;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.dm-stale--wrong {
+  background: rgba(224,92,92,0.15);
+  color: var(--red);
+  font-weight: 700;
+}
 
 /* ── Past runs ─────────────────────────────────────────────────────────────── */
 .past-runs {

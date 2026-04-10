@@ -17,6 +17,23 @@ TOOLS = [
     {
         "type": "function",
         "function": {
+            "name": "ask_dm",
+            "description": "Ask the Dungeon Master for information. They see the full map but their data is delayed by several turns — their answer may be outdated. Response arrives on your NEXT turn.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {
+                        "type": "string",
+                        "description": "Your question, e.g. 'Where is the key?', 'Where is the door?', 'Where is the exit?', 'Where is Agent B?'",
+                    }
+                },
+                "required": ["question"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "move",
             "description": "Move one step in a cardinal direction.",
             "parameters": {
@@ -92,15 +109,17 @@ Grid symbols:
 Rules:
 - Fog of war: you can only see your current cell and the 8 cells around you.
 - One agent must find the key (K) and unlock the door (D) before either can pass through.
-- Messages you send arrive on the OTHER agent's NEXT turn.
+- Messages arrive on the OTHER agent's NEXT turn (1-turn delay).
+- The Dungeon Master (DM) sees the full map but their info is several turns old — use ask_dm when lost.
 - You MUST call exactly one tool per turn.
 
 Strategy:
-- If you see K on an adjacent cell, move there then pick_up.
+- If you see K nearby, move there and pick_up.
 - If you have the key and D is adjacent, use_item key door immediately.
 - If you see E, move onto it.
-- Otherwise, MOVE to explore — do not call look repeatedly. Pick a direction with open floor and move.
-- Use send_message to coordinate with the other agent (share key/door/exit locations).
+- If lost, use ask_dm("Where is the key?") or ask_dm("Where is the exit?") — but remember the answer may be stale.
+- Otherwise, MOVE to explore. Do not call look repeatedly.
+- Use send_message to share discoveries with the other agent.
 
 Your agent ID: {agent_id}
 """

@@ -13,14 +13,17 @@ class GameLoop:
         tracer: Tracer,
         max_turns: int = 100,
         on_event: Optional[Callable] = None,
+        dm=None,          # DungeonMaster instance, optional
     ):
         self.world = world
         self.agents = {"A": agent_a, "B": agent_b}
         self.tracer = tracer
         self.max_turns = max_turns
         self.on_event = on_event
+        self.dm = dm
 
         # Pending messages: dict[recipient_id] -> list of message strings
+        # Also used for DM responses
         self._pending_messages: dict[str, list[str]] = {"A": [], "B": []}
         # Track consecutive repeated failures per agent for stuck detection
         self._repeat_failures: dict[str, int] = {"A": 0, "B": 0}
@@ -48,11 +51,15 @@ class GameLoop:
             # Capture state BEFORE action (agent's belief at decision time)
             obs = self.world.observable_state(agent_id)
 
+            # DM records world state before each turn (builds stale history)
+            if self.dm:
+                self.dm.record(turn, self.world.world_snapshot())
+
             # Agent decides
             tool_call, prompt, raw_response, latency_ms = agent.decide(obs, messages_received)
 
             # Execute tool
-            result = self._execute_tool(agent_id, tool_call, agent)
+            result = self._execute_tool(agent_id, tool_call, agent, turn)
             agent.last_result = result
             world_after = self.world.world_snapshot()
 
@@ -137,7 +144,7 @@ class GameLoop:
     # Tool execution
     # ------------------------------------------------------------------
 
-    def _execute_tool(self, agent_id: str, tool_call: dict, agent: Agent) -> dict:
+    def _execute_tool(self, agent_id: str, tool_call: dict, agent: Agent, turn: int = 0) -> dict:
         tool = tool_call.get("tool", "look")
         args = tool_call.get("args", {})
 
@@ -160,7 +167,57 @@ class GameLoop:
             self._pending_messages[recipient].append(f"[Agent {agent_id}]: {text}")
             return {"success": True, "delivered_to": recipient, "on_turn": "next"}
 
+        if tool == "ask_dm":
+            return self._handle_ask_dm(agent_id, args.get("question", ""), turn)  # noqa
+
         return {"success": False, "reason": f"Unknown tool '{tool}'"}
+
+    def _handle_ask_dm(self, agent_id: str, question: str, turn: int) -> dict:
+        if not self.dm:
+            return {"success": False, "reason": "No Dungeon Master in this run"}
+
+        current_truth = self.world.world_snapshot()
+        dm_result     = self.dm.answer(agent_id, question, turn)
+
+        # Log DM interaction to tracer (captures stale divergences)
+        dm_event = self.tracer.log_dm_interaction(
+            turn=turn,
+            asker=agent_id,
+            question=question,
+            dm_result=dm_result,
+            current_truth=current_truth,
+        )
+
+        # Queue DM answer for delivery to the agent on their next turn
+        self._pending_messages[agent_id].append(
+            f"[Dungeon Master, {dm_result['actual_staleness']} turns stale]: {dm_result['answer']}"
+        )
+
+        print(
+            f"         DM → Agent {agent_id} "
+            f"(staleness={dm_result['actual_staleness']}): {dm_result['answer'][:60]}…"
+        )
+
+        # Emit DM SSE event
+        if self.on_event:
+            self.on_event({
+                "type":              "dm_interaction",
+                "turn":              turn,
+                "asker":             agent_id,
+                "question":          question,
+                "answer":            dm_result["answer"],
+                "actual_staleness":  dm_result["actual_staleness"],
+                "configured_staleness": dm_result["configured_staleness"],
+                "divergences":       dm_event["divergences"],
+                "latency_ms":        dm_result["latency_ms"],
+            })
+
+        return {
+            "success":    True,
+            "queued_for": agent_id,
+            "on_turn":    "next",
+            "staleness":  dm_result["actual_staleness"],
+        }
 
     def _both_at_exit(self) -> bool:
         return self.world.is_at_exit("A") and self.world.is_at_exit("B")
