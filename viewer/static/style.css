@@ -364,6 +364,61 @@ code, pre { font-family: var(--font); font-size: 0.85em; }
   font-weight: 700;
 }
 
+/* ── Analysis panel ────────────────────────────────────────────────────────── */
+.analysis-panel {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.analysis-body {
+  padding: 0.75rem 1.25rem 1rem;
+}
+
+.analysis-loading, .analysis-error {
+  font-size: 0.8rem;
+  color: var(--dim);
+  padding: 0.5rem 0;
+}
+.analysis-error { color: var(--red); }
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+.analysis-section { display: flex; flex-direction: column; gap: 0.35rem; }
+.analysis-section--wide { grid-column: 1 / -1; }
+
+.analysis-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+
+.analysis-section p {
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}
+
+.analysis-suggestions {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.analysis-suggestions li {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
 /* ── Past runs ─────────────────────────────────────────────────────────────── */
 .past-runs {
   border-top: 1px solid var(--border);

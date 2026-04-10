@@ -3,6 +3,10 @@ from agents import Agent
 from tracer import Tracer
 from typing import Optional, Callable
 
+# Thresholds for cross-agent diagnostics
+COORDINATION_GAP_THRESHOLD = 10   # turns of silence before flagging
+STAGNATION_THRESHOLD       = 5    # turns in same position before flagging
+
 
 class GameLoop:
     def __init__(
@@ -13,27 +17,33 @@ class GameLoop:
         tracer: Tracer,
         max_turns: int = 100,
         on_event: Optional[Callable] = None,
-        dm=None,          # DungeonMaster instance, optional
+        dm=None,
     ):
-        self.world = world
-        self.agents = {"A": agent_a, "B": agent_b}
-        self.tracer = tracer
+        self.world     = world
+        self.agents    = {"A": agent_a, "B": agent_b}
+        self.tracer    = tracer
         self.max_turns = max_turns
-        self.on_event = on_event
-        self.dm = dm
+        self.on_event  = on_event
+        self.dm        = dm
 
-        # Pending messages: dict[recipient_id] -> list of message strings
-        # Also used for DM responses
         self._pending_messages: dict[str, list[str]] = {"A": [], "B": []}
-        # Track consecutive repeated failures per agent for stuck detection
-        self._repeat_failures: dict[str, int] = {"A": 0, "B": 0}
-        self._last_action: dict[str, Optional[str]] = {"A": None, "B": None}
+
+        # Repeated-failure tracking (same failing action in a row)
+        self._repeat_failures: dict[str, int]          = {"A": 0, "B": 0}
+        self._last_action:     dict[str, Optional[str]] = {"A": None, "B": None}
+
+        # Coordination gap: turns since any inter-agent message was exchanged
+        self._last_message_turn: int = -1
+
+        # Stagnation: turns each agent has spent without changing position
+        self._last_positions:   dict[str, Optional[list]] = {"A": None, "B": None}
+        self._turns_stationary: dict[str, int]             = {"A": 0,    "B": 0}
 
     # ------------------------------------------------------------------
 
     def run(self) -> str:
         order = ["A", "B"]
-        turn = 0
+        turn  = 0
 
         print(f"\n{'='*40}")
         print(f"Run {self.tracer.run_id[:8]} starting")
@@ -42,28 +52,29 @@ class GameLoop:
 
         while turn < self.max_turns:
             agent_id = order[turn % 2]
-            agent = self.agents[agent_id]
+            agent    = self.agents[agent_id]
 
-            # Deliver pending messages to this agent
-            messages_received = self._pending_messages[agent_id]
-            self._pending_messages[agent_id] = []
+            # Deliver queued messages
+            messages_received                  = self._pending_messages[agent_id]
+            self._pending_messages[agent_id]   = []
 
-            # Capture state BEFORE action (agent's belief at decision time)
-            obs = self.world.observable_state(agent_id)
+            # Snapshot BEFORE action — this is what the agent's belief is compared against
+            obs          = self.world.observable_state(agent_id)
+            world_before = self.world.world_snapshot()
 
-            # DM records world state before each turn (builds stale history)
+            # DM records state before each turn
             if self.dm:
-                self.dm.record(turn, self.world.world_snapshot())
+                self.dm.record(turn, world_before)
 
             # Agent decides
             tool_call, prompt, raw_response, latency_ms = agent.decide(obs, messages_received)
 
             # Execute tool
-            result = self._execute_tool(agent_id, tool_call, agent, turn)
+            result      = self._execute_tool(agent_id, tool_call, agent, turn)
             agent.last_result = result
             world_after = self.world.world_snapshot()
 
-            # Detect stuck pattern: same failing tool 3+ times in a row
+            # ── Repeated-failure tracking ──────────────────────────────
             action_key = f"{tool_call['tool']}:{tool_call.get('args', {})}"
             if not result.get("success", True) and action_key == self._last_action[agent_id]:
                 self._repeat_failures[agent_id] += 1
@@ -71,10 +82,39 @@ class GameLoop:
                 self._repeat_failures[agent_id] = 0
             self._last_action[agent_id] = action_key
 
-            belief_state = {
-                **obs,
-                "messages_received": messages_received,
-            }
+            # ── Stagnation tracking ────────────────────────────────────
+            cur_pos = world_after["agent_positions"][agent_id]
+            if self._last_positions[agent_id] == cur_pos:
+                self._turns_stationary[agent_id] += 1
+            else:
+                self._turns_stationary[agent_id] = 0
+            self._last_positions[agent_id] = cur_pos
+
+            # ── Coordination gap ───────────────────────────────────────
+            coordination_gap = (
+                turn - self._last_message_turn
+                if self._last_message_turn >= 0
+                else turn
+            )
+
+            # ── Build extra divergences ────────────────────────────────
+            extra_divergences = []
+            if coordination_gap >= COORDINATION_GAP_THRESHOLD:
+                extra_divergences.append({
+                    "type":      "coordination_gap",
+                    "gap_turns": coordination_gap,
+                    "note":      f"No inter-agent communication for {coordination_gap} turns",
+                })
+            if self._turns_stationary[agent_id] >= STAGNATION_THRESHOLD:
+                extra_divergences.append({
+                    "type":             "agent_stagnation",
+                    "agent":            agent_id,
+                    "turns_stationary": self._turns_stationary[agent_id],
+                    "position":         cur_pos,
+                    "note":             f"Agent {agent_id} has not moved for {self._turns_stationary[agent_id]} turns",
+                })
+
+            belief_state = {**obs, "messages_received": messages_received}
 
             event = self.tracer.log_turn(
                 turn=turn,
@@ -83,15 +123,16 @@ class GameLoop:
                 action=tool_call,
                 result=result,
                 belief_state=belief_state,
-                world_truth=world_after,
+                world_truth=world_before,       # ← FIXED: belief vs truth at decision time
                 llm_prompt=prompt,
                 llm_response=raw_response,
                 latency_ms=latency_ms,
+                extra_divergences=extra_divergences,
                 extra={
-                    "repeat_failures": self._repeat_failures[agent_id],
-                    "messages_in_flight": {
-                        k: list(v) for k, v in self._pending_messages.items()
-                    },
+                    "repeat_failures":    self._repeat_failures[agent_id],
+                    "coordination_gap":   coordination_gap,
+                    "turns_stationary":   self._turns_stationary[agent_id],
+                    "messages_in_flight": {k: list(v) for k, v in self._pending_messages.items()},
                 },
             )
 
@@ -100,28 +141,22 @@ class GameLoop:
                 f"{tool_call['tool']}({tool_call['args']}) → {result}"
             )
 
-            # Emit SSE event
+            # SSE — includes positions_after separately so the SVG trail is correct
             if self.on_event:
                 self.on_event({
-                    "type": "turn",
+                    "type":           "turn",
                     **event,
-                    # Include pending message queue so UI can show in-flight messages
-                    "messages_in_flight": {
-                        k: list(v) for k, v in self._pending_messages.items()
-                    },
+                    "positions_after": world_after["agent_positions"],
+                    "messages_in_flight": {k: list(v) for k, v in self._pending_messages.items()},
                 })
 
-            # Win condition
+            # Win
             if self._both_at_exit():
                 print(f"\nBoth agents reached the exit on turn {turn}!")
                 self.tracer.log_run_end("success", turn)
                 if self.on_event:
-                    self.on_event({
-                        "type": "run_end",
-                        "outcome": "success",
-                        "total_turns": turn,
-                        "run_id": self.tracer.run_id,
-                    })
+                    self.on_event({"type": "run_end", "outcome": "success",
+                                   "total_turns": turn, "run_id": self.tracer.run_id})
                 return "success"
 
             if self.world.is_at_exit(agent_id):
@@ -132,12 +167,8 @@ class GameLoop:
         print(f"\nTurn limit ({self.max_turns}) reached.")
         self.tracer.log_run_end("turn_limit", turn)
         if self.on_event:
-            self.on_event({
-                "type": "run_end",
-                "outcome": "turn_limit",
-                "total_turns": turn,
-                "run_id": self.tracer.run_id,
-            })
+            self.on_event({"type": "run_end", "outcome": "turn_limit",
+                           "total_turns": turn, "run_id": self.tracer.run_id})
         return "turn_limit"
 
     # ------------------------------------------------------------------
@@ -152,8 +183,7 @@ class GameLoop:
             return self.world.move(agent_id, args.get("direction", "north"))
 
         if tool == "look":
-            obs = self.world.observable_state(agent_id)
-            return {"success": True, "observation": obs}
+            return {"success": True, "observation": self.world.observable_state(agent_id)}
 
         if tool == "pick_up":
             return self.world.pick_up(agent_id)
@@ -162,13 +192,14 @@ class GameLoop:
             return self.world.use_item(agent_id, args.get("item", ""), args.get("target", ""))
 
         if tool == "send_message":
-            text = args.get("text", "")
+            text      = args.get("text", "")
             recipient = "B" if agent_id == "A" else "A"
             self._pending_messages[recipient].append(f"[Agent {agent_id}]: {text}")
+            self._last_message_turn = turn          # update coordination gap clock
             return {"success": True, "delivered_to": recipient, "on_turn": "next"}
 
         if tool == "ask_dm":
-            return self._handle_ask_dm(agent_id, args.get("question", ""), turn)  # noqa
+            return self._handle_ask_dm(agent_id, args.get("question", ""), turn)
 
         return {"success": False, "reason": f"Unknown tool '{tool}'"}
 
@@ -179,7 +210,6 @@ class GameLoop:
         current_truth = self.world.world_snapshot()
         dm_result     = self.dm.answer(agent_id, question, turn)
 
-        # Log DM interaction to tracer (captures stale divergences)
         dm_event = self.tracer.log_dm_interaction(
             turn=turn,
             asker=agent_id,
@@ -188,36 +218,28 @@ class GameLoop:
             current_truth=current_truth,
         )
 
-        # Queue DM answer for delivery to the agent on their next turn
         self._pending_messages[agent_id].append(
             f"[Dungeon Master, {dm_result['actual_staleness']} turns stale]: {dm_result['answer']}"
         )
 
-        print(
-            f"         DM → Agent {agent_id} "
-            f"(staleness={dm_result['actual_staleness']}): {dm_result['answer'][:60]}…"
-        )
+        print(f"         DM → Agent {agent_id} (staleness={dm_result['actual_staleness']}): "
+              f"{dm_result['answer'][:60]}…")
 
-        # Emit DM SSE event
         if self.on_event:
             self.on_event({
-                "type":              "dm_interaction",
-                "turn":              turn,
-                "asker":             agent_id,
-                "question":          question,
-                "answer":            dm_result["answer"],
-                "actual_staleness":  dm_result["actual_staleness"],
-                "configured_staleness": dm_result["configured_staleness"],
-                "divergences":       dm_event["divergences"],
-                "latency_ms":        dm_result["latency_ms"],
+                "type":                  "dm_interaction",
+                "turn":                  turn,
+                "asker":                 agent_id,
+                "question":              question,
+                "answer":                dm_result["answer"],
+                "actual_staleness":      dm_result["actual_staleness"],
+                "configured_staleness":  dm_result["configured_staleness"],
+                "divergences":           dm_event["divergences"],
+                "latency_ms":            dm_result["latency_ms"],
             })
 
-        return {
-            "success":    True,
-            "queued_for": agent_id,
-            "on_turn":    "next",
-            "staleness":  dm_result["actual_staleness"],
-        }
+        return {"success": True, "queued_for": agent_id, "on_turn": "next",
+                "staleness": dm_result["actual_staleness"]}
 
     def _both_at_exit(self) -> bool:
         return self.world.is_at_exit("A") and self.world.is_at_exit("B")

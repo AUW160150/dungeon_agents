@@ -9,6 +9,7 @@ Usage:
 """
 
 import argparse
+import json
 import random
 from pathlib import Path
 from typing import Optional, Callable
@@ -18,6 +19,7 @@ from agents import Agent
 from game_loop import GameLoop
 from tracer import Tracer
 from dm_agent import DungeonMaster
+import analysis as analysis_module
 
 RUNS_DIR = Path(__file__).parent / "runs"
 
@@ -59,9 +61,27 @@ def simulate(
     loop = GameLoop(world, agent_a, agent_b, tracer, max_turns=max_turns, dm=dm, on_event=on_event)
     outcome = loop.run()
 
+    # Generate post-run LLM analysis
+    analysis_result = None
+    try:
+        print("[analysis] Generating post-run report…")
+        analysis_result = analysis_module.generate(tracer.events)
+        if on_event:
+            on_event({"type": "analysis", "run_id": tracer.run_id, **analysis_result})
+    except Exception as e:
+        print(f"[analysis] Failed: {e}")
+        if on_event:
+            on_event({"type": "analysis_error", "run_id": tracer.run_id, "error": str(e)})
+
+    # Save trace + analysis to disk in one write
     RUNS_DIR.mkdir(exist_ok=True)
     out_path = RUNS_DIR / f"{tracer.run_id[:8]}.json"
-    tracer.save(str(out_path))
+    payload = {"run_id": tracer.run_id, "events": tracer.events}
+    if analysis_result:
+        payload["analysis"] = analysis_result
+    with open(out_path, "w") as f:
+        json.dump(payload, f, indent=2)
+    print(f"[tracer] Saved {len(tracer.events)} events → {out_path}")
 
     return tracer.run_id, outcome, str(out_path)
 

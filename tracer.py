@@ -63,9 +63,12 @@ class Tracer:
         llm_prompt: Optional[str] = None,
         llm_response: Optional[str] = None,
         latency_ms: Optional[int] = None,
+        extra_divergences: Optional[list] = None,
         extra: Optional[dict] = None,
     ) -> dict:
         divergences = _detect_divergences(belief_state, world_truth, agent)
+        if extra_divergences:
+            divergences.extend(extra_divergences)
 
         event = {
             "run_id": self.run_id,

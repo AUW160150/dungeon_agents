@@ -75,6 +75,17 @@
 
   </div><!-- /workspace -->
 
+  <!-- ── Analysis panel ────────────────────────────────────────────────── -->
+  <div class="analysis-panel hidden" id="analysis-panel">
+    <div class="panel-title">Post-Run Analysis
+      <span id="analysis-failure-badge"></span>
+      <span class="panel-subtitle" id="analysis-subtitle"></span>
+    </div>
+    <div class="analysis-body" id="analysis-body">
+      <div class="analysis-loading">⏳ Generating analysis…</div>
+    </div>
+  </div>
+
   <!-- ── Past runs ──────────────────────────────────────────────────────── -->
   <div class="past-runs" id="past-runs">
     <div class="panel-title">Past runs</div>
@@ -152,6 +163,8 @@ function handleSSE(e) {
   else if (data.type === "turn")       onTurn(data);
   else if (data.type === "dm_interaction") onDMInteraction(data);
   else if (data.type === "run_end")    onRunEnd(data);
+  else if (data.type === "analysis")   onAnalysis(data);
+  else if (data.type === "analysis_error") onAnalysisError(data);
 }
 
 // ── world_init ────────────────────────────────────────────────────────────────
@@ -222,7 +235,7 @@ function onRunEnd(data) {
   document.getElementById("run-btn").disabled  = false;
   document.getElementById("run-btn").textContent = "▶ Run";
   document.getElementById("download-btn").disabled = false;
-  evtSource.close();
+  // Keep evtSource open — waiting for analysis event
 
   // End-of-run banner in log
   const banner = document.createElement("div");
@@ -234,7 +247,59 @@ function onRunEnd(data) {
   document.getElementById("event-log").appendChild(banner);
   scrollLog();
 
+  // Show analysis panel with loading state
+  const panel = document.getElementById("analysis-panel");
+  panel.classList.remove("hidden");
+  document.getElementById("analysis-body").innerHTML =
+    '<div class="analysis-loading">⏳ Generating analysis…</div>';
+
   loadRunHistory();
+}
+
+// ── analysis ──────────────────────────────────────────────────────────────────
+function onAnalysis(data) {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+
+  const failureType = data.failure_type || "unknown";
+  const badgeClass  = {
+    success:      "badge--success",
+    single_agent: "badge--turn_limit",
+    interaction:  "badge--turn_limit",
+    emergent:     "badge--stuck",
+  }[failureType] || "badge--unknown";
+
+  document.getElementById("analysis-failure-badge").innerHTML =
+    `<span class="badge ${badgeClass}">${failureType.replace(/_/g, " ")}</span>`;
+  document.getElementById("analysis-subtitle").textContent = "";
+
+  const suggestions = (data.what_should_change || "")
+    .split("\n")
+    .filter(l => l.trim())
+    .map(l => `<li>${l.replace(/^-\s*/, "")}</li>`)
+    .join("");
+
+  document.getElementById("analysis-body").innerHTML = `
+    <div class="analysis-grid">
+      <div class="analysis-section">
+        <div class="analysis-label">What happened</div>
+        <p>${data.what_happened || "—"}</p>
+      </div>
+      <div class="analysis-section">
+        <div class="analysis-label">Why it happened</div>
+        <p>${data.why_it_happened || "—"}</p>
+      </div>
+      <div class="analysis-section analysis-section--wide">
+        <div class="analysis-label">What should change</div>
+        <ul class="analysis-suggestions">${suggestions || "<li>—</li>"}</ul>
+      </div>
+    </div>
+  `;
+}
+
+function onAnalysisError(data) {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  document.getElementById("analysis-body").innerHTML =
+    `<div class="analysis-error">Analysis failed: ${data.error || "unknown error"}</div>`;
 }
 
 // ── SVG dungeon ───────────────────────────────────────────────────────────────
@@ -321,7 +386,7 @@ function updateSVG(data) {
   const svg = document.getElementById("dungeon-svg");
   if (!svg) return;
 
-  const positions = data.world_truth?.agent_positions || {};
+  const positions = data.positions_after || data.world_truth?.agent_positions || {};
   const agLayer   = svg.querySelector("#layer-agents");
 
   // Move agent markers and extend trails
@@ -424,13 +489,27 @@ function appendLogEntry(data) {
 }
 
 function renderDivergences(divs) {
-  return divs.map(d => `
+  return divs.map(d => {
+    const isGap = d.type === "coordination_gap";
+    const isStag = d.type === "agent_stagnation";
+    let detail = "";
+    if (isGap) {
+      detail = `<span class="div-believed">⑊ silent for <code>${d.gap_turns}</code> turns</span>`;
+    } else if (isStag) {
+      detail = `<span class="div-believed">stationary for <code>${d.turns_stationary}</code> turns</span>`;
+    } else if (d.believed !== undefined) {
+      detail = `<span class="div-believed">believed <code>${JSON.stringify(d.believed)}</code></span>
+                <span class="div-truth">truth <code>${JSON.stringify(d.truth)}</code></span>`;
+    } else if (d.note) {
+      detail = `<span class="div-believed">${d.note}</span>`;
+    }
+    return `
     <div class="log-diverge">
       <span class="div-icon">⚑</span>
       <span class="div-type">${d.type.replace(/_/g," ")}</span>
-      <span class="div-believed">believed <code>${JSON.stringify(d.believed)}</code></span>
-      <span class="div-truth">truth <code>${JSON.stringify(d.truth)}</code></span>
-    </div>`).join("");
+      ${detail}
+    </div>`;
+  }).join("");
 }
 
 function renderMsgNote(data) {

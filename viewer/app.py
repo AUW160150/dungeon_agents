@@ -79,7 +79,7 @@ def stream():
             try:
                 event = _event_queue.get(timeout=1.0)
                 yield f"data: {json.dumps(event)}\n\n"
-                if event.get("type") == "run_end":
+                if event.get("type") in ("analysis", "analysis_error"):
                     break
             except queue.Empty:
                 # Keep connection alive; stop if run finished and queue is empty
