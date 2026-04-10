@@ -39,6 +39,7 @@
     <span id="divergence-counter" class="status-item warn hidden">0 divergences</span>
     <div class="milestones" id="milestones"></div>
     <div class="header-right-actions">
+      <button class="btn-small" onclick="openRunsModal()">Past Runs</button>
       <button id="download-btn" class="btn-small" disabled onclick="downloadJSON()">↓ Export JSON</button>
     </div>
   </div>
@@ -55,6 +56,9 @@
         <div class="log-empty">Start a run to see the trace.</div>
       </div>
     </div>
+
+    <!-- Resize handle ─────────────────────────────────────────────────── -->
+    <div class="resize-divider" id="resize-divider"></div>
 
     <!-- Right: Live dungeon ───────────────────────────────────────────── -->
     <div class="dungeon-panel">
@@ -79,6 +83,7 @@
 
   <!-- ── Analysis panel ────────────────────────────────────────────────── -->
   <div class="analysis-panel hidden" id="analysis-panel">
+    <div class="analysis-resize-handle" id="analysis-resize-handle"></div>
     <div class="panel-title">Post-Run Analysis
       <span id="analysis-failure-badge"></span>
       <span class="panel-subtitle" id="analysis-subtitle"></span>
@@ -88,10 +93,22 @@
     </div>
   </div>
 
-  <!-- ── Past runs ──────────────────────────────────────────────────────── -->
-  <div class="past-runs" id="past-runs">
-    <div class="panel-title">Past runs</div>
-    <div id="runs-table-wrap">Loading…</div>
+  <!-- ── Past runs modal ───────────────────────────────────────────────── -->
+  <div class="modal-overlay" id="runs-modal" onclick="closeRunsModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        Past Runs
+        <button class="modal-close" onclick="closeRunsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <table class="runs-table">
+          <thead><tr>
+            <th>Run ID</th><th>Outcome</th><th>Turns</th><th>Divergences</th><th></th>
+          </tr></thead>
+          <tbody id="runs-modal-body"><tr><td colspan="5" style="color:var(--dim);padding:1rem">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
 </div><!-- /app -->
@@ -286,7 +303,6 @@ function onRunEnd(data) {
   document.getElementById("analysis-body").innerHTML =
     '<div class="analysis-loading">⏳ Generating analysis…</div>';
 
-  loadRunHistory();
 }
 
 // ── analysis ──────────────────────────────────────────────────────────────────
@@ -599,28 +615,32 @@ function trackDivergences(data) {
   }
 }
 
-// ── Past runs ─────────────────────────────────────────────────────────────────
-function loadRunHistory() {
+// ── Past runs modal ───────────────────────────────────────────────────────────
+function openRunsModal() {
+  document.getElementById("runs-modal").classList.add("open");
   fetch("/api/runs").then(r => r.json()).then(runs => {
-    const wrap = document.getElementById("runs-table-wrap");
-    if (!runs.length) { wrap.innerHTML = "<p class='empty'>No runs yet.</p>"; return; }
-    wrap.innerHTML = `
-      <table class="runs-table">
-        <thead><tr>
-          <th>Run ID</th><th>Outcome</th><th>Turns</th><th>Divergences</th><th></th>
-        </tr></thead>
-        <tbody>${runs.map(r => `
-          <tr>
-            <td class="mono">${r.run_id.slice(0,8)}</td>
-            <td><span class="badge badge--${r.outcome}">${r.outcome}</span></td>
-            <td>${r.total_turns}</td>
-            <td class="${r.divergences > 0 ? "warn" : ""}">${r.divergences}</td>
-            <td><a class="btn-small" href="/download/${r.run_id.slice(0,8)}">↓ JSON</a></td>
-          </tr>`).join("")}
-        </tbody>
-      </table>`;
+    const tbody = document.getElementById("runs-modal-body");
+    if (!runs.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="color:var(--dim);padding:1rem">No runs yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = runs.map(r => `
+      <tr>
+        <td class="mono">${r.run_id.slice(0,8)}</td>
+        <td><span class="badge badge--${r.outcome}">${r.outcome}</span></td>
+        <td>${r.total_turns}</td>
+        <td class="${r.divergences > 0 ? "warn" : ""}">${r.divergences}</td>
+        <td><a class="btn-small" href="/download/${r.run_id.slice(0,8)}">↓ JSON</a></td>
+      </tr>`).join("");
   });
 }
+
+function closeRunsModal(e) {
+  if (e && e.target !== document.getElementById("runs-modal")) return;
+  document.getElementById("runs-modal").classList.remove("open");
+}
+
+function loadRunHistory() {}  // no-op — replaced by modal
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function toCXY([r, c]) {
@@ -688,6 +708,77 @@ function scrollLog() {
   const log = document.getElementById("event-log");
   log.scrollTop = log.scrollHeight;
 }
+
+// ── Resizable analysis panel (vertical) ──────────────────────────────────────
+(function() {
+  const handle  = document.getElementById("analysis-resize-handle");
+  const panel   = document.getElementById("analysis-panel");
+  let dragging  = false, startY = 0, startH = 0;
+
+  handle.addEventListener("mousedown", e => {
+    dragging = true;
+    startY   = e.clientY;
+    startH   = panel.offsetHeight;
+    handle.classList.add("dragging");
+    document.body.style.cursor     = "row-resize";
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    const dy   = startY - e.clientY;   // drag up = larger
+    const newH = Math.min(Math.max(startH + dy, 48), window.innerHeight * 0.7);
+    panel.style.height = newH + "px";
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove("dragging");
+    document.body.style.cursor     = "";
+    document.body.style.userSelect = "";
+  });
+})();
+
+// ── Resizable panels ─────────────────────────────────────────────────────────
+(function() {
+  const divider  = document.getElementById("resize-divider");
+  const logPanel = document.querySelector(".log-panel");
+  const workspace = document.querySelector(".workspace");
+  let dragging = false, startX = 0, startW = 0;
+
+  divider.addEventListener("mousedown", e => {
+    dragging = true;
+    startX   = e.clientX;
+    startW   = logPanel.offsetWidth;
+    divider.classList.add("dragging");
+    document.body.style.cursor    = "col-resize";
+    document.body.style.userSelect = "none";
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    const dx      = e.clientX - startX;
+    const total   = workspace.offsetWidth;
+    const newW    = Math.min(Math.max(startW + dx, 220), total * 0.85);
+    logPanel.style.width = newW + "px";
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    divider.classList.remove("dragging");
+    document.body.style.cursor     = "";
+    document.body.style.userSelect = "";
+  });
+})();
+
+// Close modal on Escape
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeRunsModal();
+});
 
 // Init
 loadRunHistory();
