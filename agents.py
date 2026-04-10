@@ -52,7 +52,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "look",
-            "description": "Observe your current position and all adjacent cells.",
+            "description": "Observe your current position and all adjacent cells. Only use this if you have a specific reason — prefer moving to explore.",
             "parameters": {"type": "object", "properties": {}, "required": []},
         },
     },
@@ -95,31 +95,50 @@ TOOLS = [
     },
 ]
 
-SYSTEM_PROMPT = """You are an explorer agent in a dungeon grid. Your goal: reach the exit (E).
+SYSTEM_PROMPT = """You are an explorer agent in a dungeon grid. Your goal: BOTH agents must reach the exit (E).
 
 Grid symbols:
-  .  empty floor
-  #  wall (impassable)
-  K  key (pick it up with pick_up)
-  D  locked door (use_item key door when standing adjacent to it)
-  O  open door (passable)
-  E  exit — move onto it to win
-  A / B  the two agents
+  .  empty floor      #  wall (impassable)
+  K  key              D  locked door (needs key)
+  O  open door        E  exit
+  A / B  the agents
 
 Rules:
-- Fog of war: you can only see your current cell and the 8 cells around you.
-- One agent must find the key (K) and unlock the door (D) before either can pass through.
-- Messages arrive on the OTHER agent's NEXT turn (1-turn delay).
-- The Dungeon Master (DM) sees the full map but their info is several turns old — use ask_dm when lost.
+- Fog of war: you can only see a 3x3 area around you.
+- One agent must find K, pick it up, and use it on D to unlock it. Then both reach E.
+- Messages to your partner arrive on their NEXT turn.
+- The DM sees the full map but their snapshot is several turns old — useful but possibly stale.
 - You MUST call exactly one tool per turn.
 
-Strategy:
-- If you see K nearby, move there and pick_up.
-- If you have the key and D is adjacent, use_item key door immediately.
-- If you see E, move onto it.
-- If lost, use ask_dm("Where is the key?") or ask_dm("Where is the exit?") — but remember the answer may be stale.
-- Otherwise, MOVE to explore. Do not call look repeatedly.
-- Use send_message to share discoveries with the other agent.
+Strategy (follow in strict priority order):
+
+1. TURN 0 — Your very first turn: ask_dm("Where is the key, door, and exit? Give row and col for each.")
+   Do this before anything else. You need coordinates to navigate efficiently.
+
+2. KEY PICKUP — If you are standing on K (visible in your current cell): pick_up immediately.
+
+3. UNLOCK — If you have the key and are adjacent to D: use_item key door immediately.
+
+4. NAVIGATE TO TARGET — If you know a landmark's coordinates (from DM or messages), move toward it:
+   Use the navigation hint provided below — it tells you exactly which direction to go.
+
+5. SHARE DISCOVERIES — When you find or learn a location (key, door, exit), immediately send_message
+   to your partner. Use this format so they can navigate:
+     "KEY at row=R, col=C"
+     "DOOR at row=R, col=C"
+     "EXIT at row=R, col=C"
+     "I have the KEY, heading to door at row=R, col=C"
+
+6. LOOPING DETECTED — If the observation shows a loop warning: stop exploring and
+   ask_dm("Where is the key and exit? I appear to be going in circles.")
+
+7. EXPLORE — If you have no target and no loop warning: move to an unvisited direction.
+   Never call look when you could move instead. Prefer directions not in your recent path.
+
+Coordination protocol:
+- If you have the key: message your partner with the door location so they can converge there.
+- If your partner has the key: navigate toward the door/exit to be ready.
+- If you find the exit: message your partner its location.
 
 Your agent ID: {agent_id}
 """
@@ -127,21 +146,65 @@ Your agent ID: {agent_id}
 
 class Agent:
     def __init__(self, agent_id: str, model: str = "gpt-4o-mini"):
-        self.agent_id = agent_id
-        self.model = model
-        self.last_result: Optional[dict] = None   # result of previous turn's action
+        self.agent_id   = agent_id
+        self.model      = model
+        self.last_result: Optional[dict] = None
+
+        # Cross-turn state for loop detection and landmark memory
+        self.recent_positions: list  = []          # last 12 positions as (row, col) tuples
+        self.known_landmarks:  dict  = {}          # {"key": [r,c], "door": [r,c], "exit": [r,c]}
+        self.turn_count:       int   = 0
+
+    def update_knowledge(self, obs: dict):
+        """
+        Called by the game loop before decide() each turn.
+        Updates landmark memory from visible cells and tracks position history.
+        """
+        pos = obs.get("position")
+        if pos:
+            self.recent_positions.append(tuple(pos))
+            if len(self.recent_positions) > 12:
+                self.recent_positions.pop(0)
+
+        # Learn landmark locations from what's currently visible
+        for coord_str, cell in obs.get("visible_cells", {}).items():
+            r, c = map(int, coord_str.split(","))
+            if cell == "K" and "key" not in self.known_landmarks:
+                self.known_landmarks["key"] = [r, c]
+            if cell in ("D", "O") and "door" not in self.known_landmarks:
+                self.known_landmarks["door"] = [r, c]
+            if cell == "E" and "exit" not in self.known_landmarks:
+                self.known_landmarks["exit"] = [r, c]
+
+        # If we're carrying the key, it's no longer on the floor
+        if "key" in obs.get("inventory", []):
+            self.known_landmarks.pop("key", None)
+
+        self.turn_count += 1
+
+    @property
+    def is_looping(self) -> bool:
+        """True if the agent has been cycling through ≤3 unique cells in the last 10 moves."""
+        if len(self.recent_positions) < 10:
+            return False
+        return len(set(self.recent_positions[-10:])) <= 3
 
     # ------------------------------------------------------------------
     # Decision
     # ------------------------------------------------------------------
 
     def decide(self, observable_state: dict, messages_received: list[str]) -> tuple[dict, str, str, int]:
-        """
-        Returns (tool_call_dict, full_prompt_str, raw_response_str, latency_ms)
-        """
-        obs_text = _format_observation(observable_state, messages_received, self.last_result)
+        """Returns (tool_call_dict, prompt_str, raw_response_str, latency_ms)"""
+        obs_text = _format_observation(
+            observable_state,
+            messages_received,
+            self.last_result,
+            self.known_landmarks,
+            self.recent_positions,
+            self.is_looping,
+            self.turn_count,
+        )
 
-        # Stateless per turn — predictable context window, easier to trace
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT.format(agent_id=self.agent_id)},
             {"role": "user",   "content": obs_text},
@@ -157,12 +220,10 @@ class Agent:
         latency_ms = int((time.time() - start) * 1000)
 
         raw_response = response.model_dump_json()
-        choice = response.choices[0]
+        choice       = response.choices[0]
 
-        # Extract tool call
         tool_call = choice.message.tool_calls[0] if choice.message.tool_calls else None
         if tool_call is None:
-            # Fallback: look if no tool was chosen
             tool_dict = {"tool": "look", "args": {}}
         else:
             try:
@@ -178,36 +239,92 @@ class Agent:
 # Helpers
 # ------------------------------------------------------------------
 
-def _format_observation(obs: dict, messages: list[str], last_result: Optional[dict] = None) -> str:
-    r, c = obs['position']
+def _nav_hint(from_pos: list, to_pos: list) -> str:
+    """
+    Compute cardinal directions to move from from_pos toward to_pos.
+    Returns a human-readable hint like 'go north (3 steps) then east (5 steps)'.
+    """
+    dr = to_pos[0] - from_pos[0]
+    dc = to_pos[1] - from_pos[1]
+    parts = []
+    if dr < 0:
+        parts.append(f"north ({abs(dr)} step{'s' if abs(dr) > 1 else ''})")
+    elif dr > 0:
+        parts.append(f"south ({dr} step{'s' if dr > 1 else ''})")
+    if dc < 0:
+        parts.append(f"west ({abs(dc)} step{'s' if abs(dc) > 1 else ''})")
+    elif dc > 0:
+        parts.append(f"east ({dc} step{'s' if dc > 1 else ''})")
+    if not parts:
+        return "you are already there"
+    manhattan = abs(dr) + abs(dc)
+    return f"go {' then '.join(parts)}  (Manhattan distance: {manhattan})"
+
+
+def _format_observation(
+    obs:               dict,
+    messages:          list,
+    last_result:       Optional[dict],
+    known_landmarks:   dict,
+    recent_positions:  list,
+    is_looping:        bool,
+    turn_count:        int,
+) -> str:
+    pos = obs["position"]
+    r, c = pos
+
     lines = [
-        f"Your position: row={r}, col={c}  (row increases going south, col increases going east)",
+        f"Turn: {turn_count}",
+        f"Your position: row={r}, col={c}",
         f"Inventory: {obs['inventory'] or 'empty'}",
         f"Door unlocked: {obs['door_unlocked']}",
         "",
-        "Visible cells (row,col → cell):",
+        "Visible cells (row,col → cell type):",
     ]
     for coord, cell in sorted(obs["visible_cells"].items()):
-        lines.append(f"  row,col {coord} → {cell}")
+        lines.append(f"  {coord} → {cell}")
 
+    # Other agent
     if obs["other_agent_visible"]:
-        lines.append(f"\nOther agent is visible at {obs['other_agent_position']}")
+        op = obs["other_agent_position"]
+        lines.append(f"\nPartner visible at row={op[0]}, col={op[1]}")
     else:
-        lines.append("\nOther agent is not in view")
+        lines.append("\nPartner not in view")
 
+    # Known landmarks + navigation hints
+    if known_landmarks:
+        lines.append("\nKnown landmark locations (from your exploration or messages):")
+        for name, lpos in known_landmarks.items():
+            hint = _nav_hint(pos, lpos)
+            lines.append(f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}  → {hint}")
+    else:
+        lines.append("\nNo landmark locations known yet — ask_dm to get coordinates.")
+
+    # Loop warning
+    if is_looping:
+        unique = len(set(recent_positions[-10:]))
+        lines.append(
+            f"\n⚠ LOOP WARNING: you have visited only {unique} unique cells in your last 10 moves."
+            f" You are going in circles. Use ask_dm to get coordinates and break out."
+        )
+    elif len(recent_positions) >= 4:
+        recent_str = " → ".join(f"r{p[0]},c{p[1]}" for p in recent_positions[-4:])
+        lines.append(f"\nRecent path (last 4): {recent_str}")
+
+    # Last action feedback
     if last_result is not None:
-        success = last_result.get("success", True)
-        if not success:
-            lines.append(f"\nLast action FAILED: {last_result.get('reason', 'unknown reason')}. Try something different.")
+        if not last_result.get("success", True):
+            lines.append(f"\nLast action FAILED: {last_result.get('reason', 'unknown')}. Try something different.")
         else:
-            lines.append(f"\nLast action succeeded.")
+            lines.append("\nLast action succeeded.")
 
+    # Messages
     if messages:
-        lines.append("\nMessages received this turn:")
+        lines.append("\nMessages from partner this turn:")
         for m in messages:
-            lines.append(f"  - {m}")
+            lines.append(f"  {m}")
     else:
-        lines.append("\nNo messages received this turn.")
+        lines.append("\nNo messages from partner this turn.")
 
     lines.append("\nWhat do you do? Call exactly one tool.")
     return "\n".join(lines)

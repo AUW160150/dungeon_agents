@@ -66,6 +66,9 @@ class GameLoop:
             if self.dm:
                 self.dm.record(turn, world_before)
 
+            # Update agent's cross-turn knowledge (landmarks, loop detection)
+            agent.update_knowledge(obs)
+
             # Agent decides
             tool_call, prompt, raw_response, latency_ms = agent.decide(obs, messages_received)
 
