@@ -498,8 +498,9 @@ function renderDivergences(divs) {
     } else if (isStag) {
       detail = `<span class="div-believed">stationary for <code>${d.turns_stationary}</code> turns</span>`;
     } else if (d.believed !== undefined) {
-      detail = `<span class="div-believed">believed <code>${JSON.stringify(d.believed)}</code></span>
-                <span class="div-truth">truth <code>${JSON.stringify(d.truth)}</code></span>`;
+      const fmt = v => Array.isArray(v) ? fmtPos(v) : JSON.stringify(v);
+      detail = `<span class="div-believed">believed <code>${fmt(d.believed)}</code></span>
+                <span class="div-truth">truth <code>${fmt(d.truth)}</code></span>`;
     } else if (d.note) {
       detail = `<span class="div-believed">${d.note}</span>`;
     }
@@ -628,10 +629,14 @@ function fmtArgs(args) {
   if (!args || !Object.keys(args).length) return "";
   return Object.entries(args).map(([k, v]) => `<span class="arg-val">${v}</span>`).join(" ");
 }
+function fmtPos(pos) {
+  if (!pos || pos.length < 2) return String(pos);
+  return `r${pos[0]},c${pos[1]}`;
+}
 function fmtResult(result) {
   if (!result) return "";
   if (result.item)         return `picked up <strong>${result.item}</strong>`;
-  if (result.new_position) return `→ [${result.new_position}]`;
+  if (result.new_position) return `→ ${fmtPos(result.new_position)}`;
   if (result.result)       return result.result;
   if (result.delivered_to) return `→ Agent ${result.delivered_to} (next turn)`;
   return "";

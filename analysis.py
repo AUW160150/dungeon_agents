@@ -175,5 +175,15 @@ def generate(events: list) -> dict:
     )
 
     result = json.loads(response.choices[0].message.content)
+
+    # Hard override: if the run actually succeeded, failure_type must be "success"
+    # regardless of LLM classification (it sometimes misreads pick_up failures etc.)
+    outcome = next(
+        (e.get("outcome") for e in reversed(events) if e.get("phase") == "run_end"),
+        None,
+    )
+    if outcome == "success":
+        result["failure_type"] = "success"
+
     result["trace_summary"] = summary   # keep what we fed the LLM — transparency
     return result

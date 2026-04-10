@@ -179,15 +179,16 @@ class Agent:
 # ------------------------------------------------------------------
 
 def _format_observation(obs: dict, messages: list[str], last_result: Optional[dict] = None) -> str:
+    r, c = obs['position']
     lines = [
-        f"Your position: {obs['position']}",
+        f"Your position: row={r}, col={c}  (row increases going south, col increases going east)",
         f"Inventory: {obs['inventory'] or 'empty'}",
         f"Door unlocked: {obs['door_unlocked']}",
         "",
         "Visible cells (row,col → cell):",
     ]
     for coord, cell in sorted(obs["visible_cells"].items()):
-        lines.append(f"  {coord} → {cell}")
+        lines.append(f"  row,col {coord} → {cell}")
 
     if obs["other_agent_visible"]:
         lines.append(f"\nOther agent is visible at {obs['other_agent_position']}")
