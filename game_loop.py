@@ -83,11 +83,11 @@ class GameLoop:
                 for ag in self.agents.values():
                     ag.known_landmarks.pop("key", None)
             if tool_call.get("tool") == "use_item" and result.get("success"):
-                # Key consumed, door open — both agents clear key, update door status
+                # Key consumed, door open — both agents clear key and door from landmarks.
+                # They should now navigate to exit only.
                 for ag in self.agents.values():
                     ag.known_landmarks.pop("key", None)
-                    if "door" in ag.known_landmarks:
-                        ag.known_landmarks["door_open"] = ag.known_landmarks.pop("door")
+                    ag.known_landmarks.pop("door", None)
 
             # ── Repeated-failure tracking ──────────────────────────────
             action_key = f"{tool_call['tool']}:{tool_call.get('args', {})}"

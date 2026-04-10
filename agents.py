@@ -122,23 +122,16 @@ Strategy (follow in strict priority order):
 4. NAVIGATE TO TARGET — If you know a landmark's coordinates (from DM or messages), move toward it:
    Use the navigation hint provided below — it tells you exactly which direction to go.
 
-5. SHARE DISCOVERIES — When you find or learn a location (key, door, exit), immediately send_message
-   to your partner. Use this format so they can navigate:
-     "KEY at row=R, col=C"
-     "DOOR at row=R, col=C"
-     "EXIT at row=R, col=C"
-     "I have the KEY, heading to door at row=R, col=C"
+5. SHARE DISCOVERIES — After picking up the key OR finding exit/door for the first time,
+   send_message ONCE to your partner. Only share facts you have directly observed.
+   Do NOT claim to have items you do not have (check your inventory first).
+   Format: "KEY at row=R col=C" / "DOOR at row=R col=C" / "EXIT at row=R col=C" / "I PICKED UP THE KEY"
 
-6. LOOPING DETECTED — If the observation shows a loop warning: stop exploring and
-   ask_dm("Where is the key and exit? I appear to be going in circles.")
+6. LOOPING DETECTED — If the observation shows a loop warning, follow its instruction exactly.
+   If it says navigate to exit, move toward exit. If it says ask_dm, ask once then move.
 
-7. EXPLORE — If you have no target and no loop warning: move to an unvisited direction.
-   Never call look when you could move instead. Prefer directions not in your recent path.
-
-Coordination protocol:
-- If you have the key: message your partner with the door location so they can converge there.
-- If your partner has the key: navigate toward the door/exit to be ready.
-- If you find the exit: message your partner its location.
+7. EXPLORE — If you have no target: move in a direction not in your recent path.
+   Never call look when you could move.
 
 Your agent ID: {agent_id}
 """
@@ -180,10 +173,11 @@ class Agent:
         if "key" in obs.get("inventory", []):
             self.known_landmarks.pop("key", None)
 
-        # If the door is already unlocked, the key is gone — stop navigating to it
+        # If the door is already unlocked, key is gone and door no longer matters
         if obs.get("door_unlocked"):
             self.known_landmarks.pop("key", None)
             self.known_landmarks.pop("door", None)
+            self.known_landmarks.pop("door_open", None)
 
         self.turn_count += 1
 
@@ -306,13 +300,20 @@ def _format_observation(
     else:
         lines.append("\nNo landmark locations known yet. Use ask_dm ONCE to get coordinates.")
 
-    # Loop warning
+    # Loop warning — context-aware: if exit is known, navigate there; otherwise ask DM
     if is_looping:
         unique = len(set(recent_positions[-10:]))
-        lines.append(
-            f"\n⚠ LOOP WARNING: you have visited only {unique} unique cells in your last 10 moves."
-            f" You are going in circles. Use ask_dm to get coordinates and break out."
-        )
+        if "exit" in known_landmarks:
+            ep = known_landmarks["exit"]
+            lines.append(
+                f"\n⚠ LOOP WARNING: visiting only {unique} unique cells in last 10 moves."
+                f" You already know the EXIT is at row={ep[0]}, col={ep[1]}. Navigate there NOW — do not ask_dm."
+            )
+        else:
+            lines.append(
+                f"\n⚠ LOOP WARNING: visiting only {unique} unique cells in last 10 moves."
+                f" You are going in circles. Use ask_dm to get coordinates."
+            )
     elif len(recent_positions) >= 4:
         recent_str = " → ".join(f"r{p[0]},c{p[1]}" for p in recent_positions[-4:])
         lines.append(f"\nRecent path (last 4): {recent_str}")
