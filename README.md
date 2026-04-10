@@ -7,6 +7,7 @@ A two-agent dungeon simulation built to explore structured observability and fai
 **Observability:** Langfuse (optional) + structured local JSON traces  
 **Viewer:** Flask + SSE + SVG, no frontend build step
 
+→ **Demo:** [Watch a live run walkthrough (Loom)](https://www.loom.com/share/b1204499c75c4c7bac93688cdc09ded9)  
 → See [FAQ.md](FAQ.md) for common questions: how the agents navigate, what the DM does, how success/failure is classified, and what tools are called when.
 
 ---
