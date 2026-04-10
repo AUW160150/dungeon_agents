@@ -157,6 +157,21 @@ Dungeon Master interactions are logged as `agent: "DM"` events with their own di
 
 `coordination_gap` and `turns_stationary` are also stored as raw integers in `extra` so queries and the analysis layer can use them without parsing divergence arrays.
 
+**Run-end event**
+
+The final event in every trace has `phase: "run_end"` and an `outcome` field. Possible values:
+
+| outcome | meaning |
+|---|---|
+| `success` | Both agents reached the exit |
+| `turn_limit` | Max turn cap reached before success |
+| `stopped` | User manually stopped the run via the viewer |
+| `stuck` | Reserved; not currently emitted |
+
+**What is not stored locally**
+
+`llm_prompt` and `llm_response` (the raw LLM input/output strings) are passed to Langfuse as generation spans but are not written to the local JSON trace. This keeps trace files a manageable size. The prompt can be reconstructed from `belief_state` and the system prompt in `agents.py`.
+
 ---
 
 ## Legibility layer

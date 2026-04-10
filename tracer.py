@@ -110,7 +110,7 @@ class Tracer:
         return event
 
     def log_run_end(self, outcome: str, total_turns: int, metadata: Optional[dict] = None):
-        """outcome: 'success' | 'turn_limit' | 'stuck'"""
+        """outcome: 'success' | 'turn_limit' | 'stuck' | 'stopped'"""
         summary = {
             "run_id": self.run_id,
             "event_id": str(uuid.uuid4()),
