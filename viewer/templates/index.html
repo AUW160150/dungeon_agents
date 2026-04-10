@@ -172,7 +172,7 @@ function onWorldInit(data) {
   worldData = data;
   runId     = data.run_id;
   document.getElementById("run-id-label").textContent =
-    `${data.run_id.slice(0, 8)} · DM staleness: ${data.dm_stale_turns}t`;
+    `${data.run_id.slice(0, 8)} · seed: ${data.seed} · DM staleness: ${data.dm_stale_turns}t`;
   buildSVG(data);
 }
 

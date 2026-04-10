@@ -1,0 +1,1313 @@
+{
+  "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+  "events": [
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "d07c5169-b19c-4ff2-a89d-2b1481f31f35",
+      "turn": 0,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:24.599320+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          2,
+          5
+        ],
+        "cell_entered": "K"
+      },
+      "belief_state": {
+        "position": [
+          2,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "1,3": ".",
+          "1,4": ".",
+          "1,5": ".",
+          "2,3": "#",
+          "2,4": ".",
+          "2,5": "K",
+          "3,3": ".",
+          "3,4": ".",
+          "3,5": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            5
+          ],
+          "B": [
+            8,
+            7
+          ]
+        },
+        "key_location": [
+          2,
+          5
+        ],
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            2,
+            4
+          ],
+          "truth": [
+            2,
+            5
+          ]
+        }
+      ],
+      "latency_ms": 1883,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "025e760e-dcb1-467e-9467-8cb0f9d52099",
+      "turn": 1,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:25.714498+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          7,
+          7
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          7
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,6": ".",
+          "7,7": ".",
+          "7,8": ".",
+          "8,6": ".",
+          "8,7": ".",
+          "8,8": ".",
+          "9,6": "#",
+          "9,7": "#",
+          "9,8": "#"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            5
+          ],
+          "B": [
+            7,
+            7
+          ]
+        },
+        "key_location": [
+          2,
+          5
+        ],
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            8,
+            7
+          ],
+          "truth": [
+            7,
+            7
+          ]
+        }
+      ],
+      "latency_ms": 1113,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "7e9a90ea-ad7c-4384-8ba1-50da6798b6a4",
+      "turn": 2,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:26.330622+00:00",
+      "action": {
+        "tool": "pick_up",
+        "args": {}
+      },
+      "result": {
+        "success": true,
+        "item": "key"
+      },
+      "belief_state": {
+        "position": [
+          2,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "1,4": ".",
+          "1,5": ".",
+          "1,6": "#",
+          "2,4": ".",
+          "2,5": "K",
+          "2,6": "#",
+          "3,4": ".",
+          "3,5": ".",
+          "3,6": "#"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            5
+          ],
+          "B": [
+            7,
+            7
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "inventory_mismatch",
+          "believed": [],
+          "truth": [
+            "key"
+          ]
+        },
+        {
+          "type": "stale_key_belief",
+          "believed": "key visible",
+          "truth": "key already picked up"
+        }
+      ],
+      "latency_ms": 614,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "3e926901-248e-4031-8fe6-8f9d9355832f",
+      "turn": 3,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:27.249495+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          6,
+          7
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          7,
+          7
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,6": ".",
+          "6,7": ".",
+          "6,8": ".",
+          "7,6": ".",
+          "7,7": ".",
+          "7,8": ".",
+          "8,6": ".",
+          "8,7": ".",
+          "8,8": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            2,
+            5
+          ],
+          "B": [
+            6,
+            7
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            7,
+            7
+          ],
+          "truth": [
+            6,
+            7
+          ]
+        }
+      ],
+      "latency_ms": 916,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "8b4d6107-c46f-419c-b4dd-a66732b4cbfc",
+      "turn": 4,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:28.785961+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          3,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          2,
+          5
+        ],
+        "inventory": [
+          "key"
+        ],
+        "visible_cells": {
+          "1,4": ".",
+          "1,5": ".",
+          "1,6": "#",
+          "2,4": ".",
+          "2,5": ".",
+          "2,6": "#",
+          "3,4": ".",
+          "3,5": ".",
+          "3,6": "#"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            3,
+            5
+          ],
+          "B": [
+            6,
+            7
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            2,
+            5
+          ],
+          "truth": [
+            3,
+            5
+          ]
+        }
+      ],
+      "latency_ms": 1534,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "da7dbf9a-033f-42ea-ad8a-740fe6e89e51",
+      "turn": 5,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:29.398944+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          5,
+          7
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          6,
+          7
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "5,6": ".",
+          "5,7": ".",
+          "5,8": ".",
+          "6,6": ".",
+          "6,7": ".",
+          "6,8": ".",
+          "7,6": ".",
+          "7,7": ".",
+          "7,8": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            3,
+            5
+          ],
+          "B": [
+            5,
+            7
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            6,
+            7
+          ],
+          "truth": [
+            5,
+            7
+          ]
+        }
+      ],
+      "latency_ms": 611,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "6caf321e-9b29-49ee-88b0-6ac375089968",
+      "turn": 6,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:30.097126+00:00",
+      "action": {
+        "tool": "use_item",
+        "args": {
+          "item": "key",
+          "target": "door"
+        }
+      },
+      "result": {
+        "success": false,
+        "reason": "Not adjacent to the door"
+      },
+      "belief_state": {
+        "position": [
+          3,
+          5
+        ],
+        "inventory": [
+          "key"
+        ],
+        "visible_cells": {
+          "2,4": ".",
+          "2,5": ".",
+          "2,6": "#",
+          "3,4": ".",
+          "3,5": ".",
+          "3,6": "#",
+          "4,4": ".",
+          "4,5": "E",
+          "4,6": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            3,
+            5
+          ],
+          "B": [
+            5,
+            7
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 696,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "fd7ef2ce-537e-4c61-9b1b-948363ed2e75",
+      "turn": 7,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:31.344508+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          5,
+          6
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          5,
+          7
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,6": ".",
+          "4,7": ".",
+          "4,8": ".",
+          "5,6": ".",
+          "5,7": ".",
+          "5,8": ".",
+          "6,6": ".",
+          "6,7": ".",
+          "6,8": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            3,
+            5
+          ],
+          "B": [
+            5,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            5,
+            7
+          ],
+          "truth": [
+            5,
+            6
+          ]
+        }
+      ],
+      "latency_ms": 1245,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "cb4cf3f9-4da2-4863-a5c4-3bcac26c7c1a",
+      "turn": 8,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:32.424133+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          4,
+          5
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          3,
+          5
+        ],
+        "inventory": [
+          "key"
+        ],
+        "visible_cells": {
+          "2,4": ".",
+          "2,5": ".",
+          "2,6": "#",
+          "3,4": ".",
+          "3,5": ".",
+          "3,6": "#",
+          "4,4": ".",
+          "4,5": "E",
+          "4,6": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            5
+          ],
+          "B": [
+            5,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            3,
+            5
+          ],
+          "truth": [
+            4,
+            5
+          ]
+        }
+      ],
+      "latency_ms": 1077,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "115b09e0-a1b1-4f63-8835-e95b877be1c1",
+      "turn": 9,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:33.743555+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I am at [5, 6]. Please check if there is a key (K) nearby."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "A",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          6
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,5": "A",
+          "4,6": ".",
+          "4,7": ".",
+          "5,5": ".",
+          "5,6": ".",
+          "5,7": ".",
+          "6,5": "#",
+          "6,6": ".",
+          "6,7": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          4,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            5
+          ],
+          "B": [
+            5,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1317,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [
+            "[Agent B]: I am at [5, 6]. Please check if there is a key (K) nearby."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "05a89ac2-2d5f-454e-9cda-61d6b1aa4327",
+      "turn": 10,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:34.625079+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          4,
+          4
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          4,
+          5
+        ],
+        "inventory": [
+          "key"
+        ],
+        "visible_cells": {
+          "3,4": ".",
+          "3,5": ".",
+          "3,6": "#",
+          "4,4": ".",
+          "4,5": "E",
+          "4,6": ".",
+          "5,4": ".",
+          "5,5": ".",
+          "5,6": "B"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          6
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent B]: I am at [5, 6]. Please check if there is a key (K) nearby."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            4
+          ],
+          "B": [
+            5,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            4,
+            5
+          ],
+          "truth": [
+            4,
+            4
+          ]
+        }
+      ],
+      "latency_ms": 880,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "91f5fd67-df4d-4f9c-8d47-6a05fd1aaa8b",
+      "turn": 11,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:35.798102+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          4,
+          6
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          5,
+          6
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,5": "E",
+          "4,6": ".",
+          "4,7": ".",
+          "5,5": ".",
+          "5,6": ".",
+          "5,7": ".",
+          "6,5": "#",
+          "6,6": ".",
+          "6,7": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            4
+          ],
+          "B": [
+            4,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            5,
+            6
+          ],
+          "truth": [
+            4,
+            6
+          ]
+        }
+      ],
+      "latency_ms": 1169,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "22e24827-a9f3-434b-973a-3c5dfe706454",
+      "turn": 12,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:36.570403+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          4,
+          5
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          4,
+          4
+        ],
+        "inventory": [
+          "key"
+        ],
+        "visible_cells": {
+          "3,3": ".",
+          "3,4": ".",
+          "3,5": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "4,5": "E",
+          "5,3": ".",
+          "5,4": ".",
+          "5,5": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            5
+          ],
+          "B": [
+            4,
+            6
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            4,
+            4
+          ],
+          "truth": [
+            4,
+            5
+          ]
+        }
+      ],
+      "latency_ms": 770,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "ff992cd3-52ca-445f-b35a-5a31a8909985",
+      "turn": 13,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T00:06:37.182026+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          4,
+          5
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          4,
+          6
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "3,5": ".",
+          "3,6": "#",
+          "3,7": ".",
+          "4,5": "A",
+          "4,6": ".",
+          "4,7": ".",
+          "5,5": ".",
+          "5,6": ".",
+          "5,7": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          4,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            5
+          ],
+          "B": [
+            4,
+            5
+          ]
+        },
+        "key_location": null,
+        "door_location": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          4,
+          5
+        ],
+        "inventories": {
+          "A": [
+            "key"
+          ],
+          "B": []
+        }
+      },
+      "divergences": [
+        {
+          "type": "position_mismatch",
+          "believed": [
+            4,
+            6
+          ],
+          "truth": [
+            4,
+            5
+          ]
+        }
+      ],
+      "latency_ms": 610,
+      "extra": {
+        "repeat_failures": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "7424f04e-9a2d-4fd4-b9c6-add94710a6cb",
+      "event_id": "cb214ca0-b685-4c85-936a-15e130e67711",
+      "turn": 13,
+      "agent": "system",
+      "phase": "run_end",
+      "timestamp": "2026-04-10T00:06:37.183345+00:00",
+      "outcome": "success",
+      "total_turns": 13,
+      "action": null,
+      "result": null,
+      "belief_state": {},
+      "world_truth": {},
+      "divergences": [],
+      "latency_ms": null
+    }
+  ]
+}

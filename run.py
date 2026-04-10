@@ -76,7 +76,7 @@ def simulate(
     # Save trace + analysis to disk in one write
     RUNS_DIR.mkdir(exist_ok=True)
     out_path = RUNS_DIR / f"{tracer.run_id[:8]}.json"
-    payload = {"run_id": tracer.run_id, "events": tracer.events}
+    payload = {"run_id": tracer.run_id, "seed": seed, "events": tracer.events}
     if analysis_result:
         payload["analysis"] = analysis_result
     with open(out_path, "w") as f:
