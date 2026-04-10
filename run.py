@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import random
+import threading
 from pathlib import Path
 from typing import Optional, Callable
 
@@ -29,6 +30,8 @@ def simulate(
     max_turns: int = 100,
     dm_stale_turns: int = 5,
     on_event: Optional[Callable] = None,
+    pause_event: Optional[threading.Event] = None,
+    stop_event: Optional[threading.Event] = None,
 ) -> tuple:
     """
     Run one simulation. Returns (run_id, outcome, json_path).
@@ -58,7 +61,11 @@ def simulate(
             "dm_stale_turns": dm_stale_turns,
         })
 
-    loop = GameLoop(world, agent_a, agent_b, tracer, max_turns=max_turns, dm=dm, on_event=on_event)
+    loop = GameLoop(
+        world, agent_a, agent_b, tracer,
+        max_turns=max_turns, dm=dm, on_event=on_event,
+        pause_event=pause_event, stop_event=stop_event,
+    )
     outcome = loop.run()
 
     # Generate post-run LLM analysis

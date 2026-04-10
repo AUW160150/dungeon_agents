@@ -1,0 +1,3151 @@
+{
+  "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+  "seed": 6229,
+  "events": [
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "da9e6dc1-512c-40c4-a44f-282bb30fbcd0",
+      "turn": 0,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:02.182937+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          5,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          4,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "3,2": ".",
+          "3,3": ".",
+          "3,4": ".",
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": ".",
+          "5,4": "."
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            4,
+            3
+          ],
+          "B": [
+            6,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1097,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "1d7f107e-0bec-4b8f-aad9-9931f2079d73",
+      "turn": 1,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:03.209713+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          5,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          6,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "5,2": "K",
+          "5,3": "A",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            6,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1025,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "e6de27d2-02ff-4b22-89bb-88520df7be07",
+      "turn": 2,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:04.143901+00:00",
+      "action": {
+        "tool": "pick_up",
+        "args": {}
+      },
+      "result": {
+        "success": false,
+        "reason": "Nothing to pick up here"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": "B",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 932,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "73a2f3b6-2bae-4ce9-9f06-85cccb8cca88",
+      "turn": 3,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:05.322050+00:00",
+      "action": {
+        "tool": "pick_up",
+        "args": {}
+      },
+      "result": {
+        "success": false,
+        "reason": "Nothing to pick up here"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": "A",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1176,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 3,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "5c0ca256-e43e-41cc-aa77-29b7e968b578",
+      "turn": 4,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:08.401039+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "The key (K) is at [5, 2]. I'm going to move there and pick it up."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "B",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": "B",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 3077,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 2,
+        "messages_in_flight": {
+          "A": [],
+          "B": [
+            "[Agent A]: The key (K) is at [5, 2]. I'm going to move there and pick it up."
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "f4d31143-262b-41d2-b73e-c53ab7d67e24",
+      "turn": 5,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:10.222307+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          5,
+          4
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": "A",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent A]: The key (K) is at [5, 2]. I'm going to move there and pick it up."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            3
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1819,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "83d720f2-6501-4130-93b9-1f8ba52cf0e4",
+      "turn": 6,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:10.788859+00:00",
+      "action": {
+        "tool": "pick_up",
+        "args": {}
+      },
+      "result": {
+        "success": false,
+        "reason": "Nothing to pick up here"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": ".",
+          "5,4": "B",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 565,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 3,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "36b4c71a-c2bd-43c4-b311-eb7a4bbd497b",
+      "turn": 7,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:11.799625+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you at [5, 3]. Let's look for the key."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "A",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,3": ".",
+          "4,4": ".",
+          "4,5": ".",
+          "5,3": "A",
+          "5,4": ".",
+          "5,5": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "6,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1009,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [
+            "[Agent B]: I see you at [5, 3]. Let's look for the key."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "65032dad-1e00-4681-9bce-adb4f4537aea",
+      "turn": 8,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:12.501719+00:00",
+      "action": {
+        "tool": "pick_up",
+        "args": {}
+      },
+      "result": {
+        "success": false,
+        "reason": "Nothing to pick up here"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": ".",
+          "5,4": "B",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent B]: I see you at [5, 3]. Let's look for the key."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 700,
+      "extra": {
+        "repeat_failures": 1,
+        "coordination_gap": 1,
+        "turns_stationary": 4,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "c0e425c3-8df1-41e4-8946-096684638fd6",
+      "turn": 9,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:13.592437+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you at [5, 3]. Let's try to find the key together!"
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "A",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          5,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,3": ".",
+          "4,4": ".",
+          "4,5": ".",
+          "5,3": "A",
+          "5,4": ".",
+          "5,5": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "6,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1088,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 2,
+        "messages_in_flight": {
+          "A": [
+            "[Agent B]: I see you at [5, 3]. Let's try to find the key together!"
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "79d14761-946c-4bc3-a1f1-f2a81f830fb3",
+      "turn": 10,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:15.462148+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          6,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          5,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,2": ".",
+          "4,3": ".",
+          "4,4": ".",
+          "5,2": "K",
+          "5,3": ".",
+          "5,4": "B",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          5,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent B]: I see you at [5, 3]. Let's try to find the key together!"
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            5,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1868,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "3c9d5ab8-caaa-4f17-b55f-1c8e5d486b73",
+      "turn": 11,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:17.271040+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          6,
+          4
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          5,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "4,3": ".",
+          "4,4": ".",
+          "4,5": ".",
+          "5,3": ".",
+          "5,4": ".",
+          "5,5": ".",
+          "6,3": "A",
+          "6,4": ".",
+          "6,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          6,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            6,
+            3
+          ],
+          "B": [
+            5,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1808,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "3d4459c5-5981-48bf-892a-1eab0811b826",
+      "turn": 12,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:18.012003+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          7,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          6,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "5,2": "K",
+          "5,3": ".",
+          "5,4": ".",
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": "B",
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          6,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            6,
+            3
+          ],
+          "B": [
+            6,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 739,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 3,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "25beb471-02f0-4ae8-8f37-82e5896c3b61",
+      "turn": 13,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:19.050453+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          7,
+          4
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          6,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "5,3": ".",
+          "5,4": ".",
+          "5,5": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "6,5": "#",
+          "7,3": "A",
+          "7,4": ".",
+          "7,5": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          7,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            6,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1036,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 4,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "462e72b7-d826-4da6-81af-f7bf10093e3d",
+      "turn": 14,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:20.883121+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see the exit (E) at [8, 4]. I will move down to try to reach it."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "B",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          7,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": "B",
+          "8,2": ".",
+          "8,3": ".",
+          "8,4": "E"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          7,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            7,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1831,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": [
+            "[Agent A]: I see the exit (E) at [8, 4]. I will move down to try to reach it."
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "13931d03-00e5-48dd-9822-fbc4550a71b1",
+      "turn": 15,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:21.575271+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          7,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,3": ".",
+          "6,4": ".",
+          "6,5": "#",
+          "7,3": "A",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          7,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent A]: I see the exit (E) at [8, 4]. I will move down to try to reach it."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            7,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 690,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "f261eef7-6004-4a40-a803-bfde620b7b05",
+      "turn": 16,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:22.258350+00:00",
+      "action": {
+        "tool": "look",
+        "args": {}
+      },
+      "result": {
+        "success": true,
+        "observation": {
+          "position": [
+            7,
+            3
+          ],
+          "inventory": [],
+          "visible_cells": {
+            "6,2": ".",
+            "6,3": ".",
+            "6,4": ".",
+            "7,2": ".",
+            "7,3": ".",
+            "7,4": ".",
+            "8,2": ".",
+            "8,3": ".",
+            "8,4": "B"
+          },
+          "other_agent_visible": true,
+          "other_agent_position": [
+            8,
+            4
+          ],
+          "door_unlocked": false
+        }
+      },
+      "belief_state": {
+        "position": [
+          7,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": ".",
+          "8,2": ".",
+          "8,3": ".",
+          "8,4": "B"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 681,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 2,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "8b5322f0-a989-4b7b-ae0d-a6b21a1f3a5e",
+      "turn": 17,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:23.035357+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": "A",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": ".",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          7,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 775,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 3,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "d69d3548-6fe4-4b4f-876e-bdf462d40374",
+      "turn": 18,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:23.701324+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          3
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          7,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,2": ".",
+          "6,3": ".",
+          "6,4": ".",
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": ".",
+          "8,2": ".",
+          "8,3": ".",
+          "8,4": "E"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            7,
+            3
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 664,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 4,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "395c8cfb-2b76-432f-bdf0-738c7efd71a5",
+      "turn": 19,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:24.358879+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "E",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            3
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 656,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 5,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "5058e07e-3262-4505-a26d-d4eadb5389b5",
+      "turn": 20,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:25.973977+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you at [8, 4]. Let's explore for the key."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "B",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": ".",
+          "8,2": ".",
+          "8,3": ".",
+          "8,4": "B",
+          "9,2": "#",
+          "9,3": "#",
+          "9,4": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            3
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1613,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": [
+            "[Agent A]: I see you at [8, 4]. Let's explore for the key."
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "ce7ef73e-7e0b-48d0-8bdf-98c1aade5fab",
+      "turn": 21,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:26.655644+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": "A",
+          "8,4": "E",
+          "8,5": ".",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          3
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent A]: I see you at [8, 4]. Let's explore for the key."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            3
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 680,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "b56ed4c5-87ea-4c79-9e9f-8e550f4cb20d",
+      "turn": 22,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:27.366568+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          3
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,2": ".",
+          "7,3": ".",
+          "7,4": ".",
+          "8,2": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "9,2": "#",
+          "9,3": "#",
+          "9,4": "#"
+        },
+        "other_agent_visible": false,
+        "other_agent_position": null,
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            3
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 709,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "6cc848a9-f0d5-4f4d-8dea-da8814869da8",
+      "turn": 23,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:28.396220+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you at [8, 4]. There are no visible items near me. Please explore and let me know if you find a key or door."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "A",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "A",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            4
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1028,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [
+            "[Agent B]: I see you at [8, 4]. There are no visible items near me. Please explore and let me know if you find a key or door."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "77e1ebf9-60dc-40fa-922a-276987f063ac",
+      "turn": 24,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:29.005568+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": "B",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent B]: I see you at [8, 4]. There are no visible items near me. Please explore and let me know if you find a key or door."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            4
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 608,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "4a148656-0065-4303-b542-f7cde49cdcdf",
+      "turn": 25,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:29.546519+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "E",
+          "8,5": "A",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 539,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "2b516915-06f1-4f99-ae53-f75d352c149f",
+      "turn": 26,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:30.592818+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you at [8, 4]. Let's explore further."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "B",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "B",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 1044,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": [
+            "[Agent A]: I see you at [8, 4]. Let's explore further."
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "741694ae-ef6c-43be-86cc-9ae5dcae7fed",
+      "turn": 27,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:31.545166+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": "A",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent A]: I see you at [8, 4]. Let's explore further."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 950,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "2c11a64c-8211-4ff9-b875-f5916e390315",
+      "turn": 28,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:32.329840+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "E",
+          "8,5": "B",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 783,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "97e14785-f38d-4455-9d3a-dfa812bcad45",
+      "turn": 29,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:33.321837+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I'm at [8, 5] and I see you at [8, 4]."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "A",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "A",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            4
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 990,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [
+            "[Agent B]: I'm at [8, 5] and I see you at [8, 4]."
+          ],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "10af2826-8e6a-4645-81cc-9c8dbf5e7882",
+      "turn": 30,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:33.943960+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "east"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          5
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": "B",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent B]: I'm at [8, 5] and I see you at [8, 4]."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            4
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 620,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "e282ab0a-5608-45dc-8504-5986c2e8b4e9",
+      "turn": 31,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:34.594191+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "E",
+          "8,5": "A",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            5
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 648,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "c674695d-0855-4127-aa49-6f6bb64e3960",
+      "turn": 32,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:36.803309+00:00",
+      "action": {
+        "tool": "send_message",
+        "args": {
+          "text": "I see you, Agent B, but there are no keys or doors nearby. Let's explore the cells above."
+        }
+      },
+      "result": {
+        "success": true,
+        "delivered_to": "B",
+        "on_turn": "next"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": ".",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "B",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 2208,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 0,
+        "turns_stationary": 1,
+        "messages_in_flight": {
+          "A": [],
+          "B": [
+            "[Agent A]: I see you, Agent B, but there are no keys or doors nearby. Let's explore the cells above."
+          ]
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "9c3cafee-693c-4ef9-a962-5193a73ba0b5",
+      "turn": 33,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:37.491338+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "north"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          7,
+          4
+        ],
+        "cell_entered": "."
+      },
+      "belief_state": {
+        "position": [
+          8,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "E",
+          "8,5": "A",
+          "9,3": "#",
+          "9,4": "#",
+          "9,5": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          5
+        ],
+        "door_unlocked": false,
+        "messages_received": [
+          "[Agent A]: I see you, Agent B, but there are no keys or doors nearby. Let's explore the cells above."
+        ]
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            8,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 686,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 1,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "c338dbdb-dfeb-4b11-8504-293da29c205b",
+      "turn": 34,
+      "agent": "A",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:38.130223+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "west"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          8,
+          5
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "7,4": "B",
+          "7,5": ".",
+          "7,6": ".",
+          "8,4": "E",
+          "8,5": ".",
+          "8,6": ".",
+          "9,4": "#",
+          "9,5": "#",
+          "9,6": "#"
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          7,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            5
+          ],
+          "B": [
+            7,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 636,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 2,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "352cf4a5-516a-480d-9e4d-e755edeece38",
+      "turn": 35,
+      "agent": "B",
+      "phase": "action",
+      "timestamp": "2026-04-10T07:09:38.842372+00:00",
+      "action": {
+        "tool": "move",
+        "args": {
+          "direction": "south"
+        }
+      },
+      "result": {
+        "success": true,
+        "new_position": [
+          8,
+          4
+        ],
+        "cell_entered": "E"
+      },
+      "belief_state": {
+        "position": [
+          7,
+          4
+        ],
+        "inventory": [],
+        "visible_cells": {
+          "6,3": ".",
+          "6,4": ".",
+          "6,5": "#",
+          "7,3": ".",
+          "7,4": ".",
+          "7,5": ".",
+          "8,3": ".",
+          "8,4": "A",
+          "8,5": "."
+        },
+        "other_agent_visible": true,
+        "other_agent_position": [
+          8,
+          4
+        ],
+        "door_unlocked": false,
+        "messages_received": []
+      },
+      "world_truth": {
+        "agent_positions": {
+          "A": [
+            8,
+            4
+          ],
+          "B": [
+            7,
+            4
+          ]
+        },
+        "key_location": [
+          5,
+          2
+        ],
+        "door_location": [
+          1,
+          5
+        ],
+        "door_unlocked": false,
+        "exit_location": [
+          8,
+          4
+        ],
+        "inventories": {
+          "A": [],
+          "B": []
+        }
+      },
+      "divergences": [],
+      "latency_ms": 710,
+      "extra": {
+        "repeat_failures": 0,
+        "coordination_gap": 3,
+        "turns_stationary": 0,
+        "messages_in_flight": {
+          "A": [],
+          "B": []
+        }
+      }
+    },
+    {
+      "run_id": "201f87d2-de19-44ae-82bc-59bf953c1d35",
+      "event_id": "81cf8bb7-42f2-4394-a94e-2ac00b7bbbd3",
+      "turn": 35,
+      "agent": "system",
+      "phase": "run_end",
+      "timestamp": "2026-04-10T07:09:38.843616+00:00",
+      "outcome": "success",
+      "total_turns": 35,
+      "action": null,
+      "result": null,
+      "belief_state": {},
+      "world_truth": {},
+      "divergences": [],
+      "latency_ms": null
+    }
+  ],
+  "analysis": {
+    "what_happened": "Agents A and B navigated the dungeon, but neither found the key (K) nor unlocked the door (D) leading to the exit (E). A attempted to pick up the key multiple times (T2, T3, T6, T8) but failed each time due to the key not being present. Messages indicating cooperation were sent, but ultimately no key was located and the exit was reached without achieving the required goals.",
+    "why_it_happened": "The primary reason for failure was a lack of coordinated exploration focused on finding the key. Agent A sent messages about the key's location (T4), but A and B did not effectively coordinate their movements to explore that area further, resulting in stagnation, particularly between T9 and T14, where A moved toward the exit. This interaction failure, compounded by outdated information from the DM and delayed messaging, led to ineffective action.",
+    "failure_type": "interaction",
+    "what_should_change": "- Implement a more robust coordination mechanism that allows agents to share real-time updates without delays. \n- Adjust the DM's information refresh rate to provide agents with up-to-date world state to minimize the impact of outdated knowledge. \n- Introduce a mapping tool that enables agents to visualize explored areas and target unvisited spots, helping to focus efforts on locating the key.",
+    "trace_summary": "Outcome: success after 35 turns\n\nAgent tool usage:\n  A: {'move': 9, 'pick_up': 3, 'send_message': 5, 'look': 1}\n  B: {'move': 13, 'pick_up': 1, 'send_message': 4}\n\nKey milestones: NONE \u2014 key never found, door never unlocked\n\nInter-agent messages sent: 9\n  T4 A\u2192B: The key (K) is at [5, 2]. I'm going to move there and pick it up.\n  T7 B\u2192A: I see you at [5, 3]. Let's look for the key.\n  T9 B\u2192A: I see you at [5, 3]. Let's try to find the key together!\n  T14 A\u2192B: I see the exit (E) at [8, 4]. I will move down to try to reach it.\n  T20 A\u2192B: I see you at [8, 4]. Let's explore for the key.\n\nLongest coordination silence: 5 turns without any inter-agent message\nLongest stagnation \u2014 A: 4 turns without moving, B: 2 turns without moving\n\nAction failures (4 total, sample):\n  T2 A: pick_up failed \u2014 Nothing to pick up here\n  T3 B: pick_up failed \u2014 Nothing to pick up here\n  T6 A: pick_up failed \u2014 Nothing to pick up here\n  T8 A: pick_up failed \u2014 Nothing to pick up here\n\nSchema divergences (belief vs truth, 0 total, sample):\n\nDM interactions: 0"
+  }
+}

@@ -1,6 +1,7 @@
 import os
 import time
 import json
+from collections import deque
 from typing import Optional
 from openai import OpenAI
 
@@ -110,6 +111,11 @@ Rules:
 - The DM sees the full map but their snapshot is several turns old — useful but possibly stale.
 - You MUST call exactly one tool per turn.
 
+WALL AVOIDANCE (highest priority rule):
+- If the observation shows "⚠ Last move X FAILED — wall blocking", you MUST NOT move X again.
+- Move in a perpendicular direction instead (the observation tells you which ones to try).
+- Only return to your intended direction once you are past the wall.
+
 Strategy (follow in strict priority order):
 
 1. TURN 0 ONLY — If you have no landmark locations known yet: ask_dm("Where is the key, door, and exit? Give row and col for each.")
@@ -121,6 +127,7 @@ Strategy (follow in strict priority order):
 
 4. NAVIGATE TO TARGET — If you know a landmark's coordinates (from DM or messages), move toward it:
    Use the navigation hint provided below — it tells you exactly which direction to go.
+   If a wall blocks your direct path, move perpendicular first (see WALL AVOIDANCE above).
 
 5. SHARE DISCOVERIES — After picking up the key OR finding exit/door for the first time,
    send_message ONCE to your partner. Only share facts you have directly observed.
@@ -142,10 +149,12 @@ class Agent:
         self.agent_id   = agent_id
         self.model      = model
         self.last_result: Optional[dict] = None
+        self.last_tool_call: Optional[dict] = None
 
         # Cross-turn state for loop detection and landmark memory
         self.recent_positions: list  = []          # last 12 positions as (row, col) tuples
         self.known_landmarks:  dict  = {}          # {"key": [r,c], "door": [r,c], "exit": [r,c]}
+        self.known_map:        dict  = {}          # (r,c) -> cell_str for every cell ever seen
         self.turn_count:       int   = 0
 
     def update_knowledge(self, obs: dict):
@@ -159,9 +168,10 @@ class Agent:
             if len(self.recent_positions) > 12:
                 self.recent_positions.pop(0)
 
-        # Learn landmark locations from what's currently visible
+        # Learn landmark locations from what's currently visible; build map
         for coord_str, cell in obs.get("visible_cells", {}).items():
             r, c = map(int, coord_str.split(","))
+            self.known_map[(r, c)] = cell   # record every seen cell
             if cell == "K" and "key" not in self.known_landmarks:
                 self.known_landmarks["key"] = [r, c]
             if cell in ("D", "O") and "door" not in self.known_landmarks:
@@ -198,7 +208,9 @@ class Agent:
             observable_state,
             messages_received,
             self.last_result,
+            self.last_tool_call,
             self.known_landmarks,
+            self.known_map,
             self.recent_positions,
             self.is_looping,
             self.turn_count,
@@ -260,11 +272,47 @@ def _nav_hint(from_pos: list, to_pos: list) -> str:
     return f"go {' then '.join(parts)}  (Manhattan distance: {manhattan})"
 
 
+def _bfs_next_step(known_map: dict, from_pos: list, to_pos: list) -> Optional[str]:
+    """
+    BFS on the agent's known map to find the first direction to move toward to_pos.
+    Cells not yet seen are treated as passable (optimistic exploration).
+    Walls (#) and locked doors (D) are impassable.
+    Returns the first direction, or None if already there or truly unreachable.
+    """
+    start = tuple(from_pos)
+    goal  = tuple(to_pos)
+    if start == goal:
+        return None
+
+    DIRS = [("north", -1, 0), ("south", 1, 0), ("east", 0, 1), ("west", 0, -1)]
+    visited = {start}
+    queue   = deque([(start, None)])  # (pos, first_direction_taken)
+
+    while queue:
+        pos, first_dir = queue.popleft()
+        for dir_name, dr, dc in DIRS:
+            npos = (pos[0] + dr, pos[1] + dc)
+            if npos in visited:
+                continue
+            cell = known_map.get(npos)
+            if cell in ("#", "D"):        # known impassable
+                continue
+            fd = first_dir if first_dir is not None else dir_name
+            if npos == goal:
+                return fd
+            visited.add(npos)
+            queue.append((npos, fd))
+
+    return None  # no path found through known + unknown cells
+
+
 def _format_observation(
     obs:               dict,
     messages:          list,
     last_result:       Optional[dict],
+    last_tool_call:    Optional[dict],
     known_landmarks:   dict,
+    known_map:         dict,
     recent_positions:  list,
     is_looping:        bool,
     turn_count:        int,
@@ -291,12 +339,26 @@ def _format_observation(
     else:
         lines.append("\nPartner not in view")
 
-    # Known landmarks + navigation hints
+    # Known landmarks + BFS navigation hints
     if known_landmarks:
         lines.append("\nKnown landmark locations — USE THESE TO NAVIGATE, do not ask_dm again:")
         for name, lpos in known_landmarks.items():
-            hint = _nav_hint(pos, lpos)
-            lines.append(f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}  → {hint}")
+            bfs_dir = _bfs_next_step(known_map, pos, lpos)
+            manhattan = abs(lpos[0] - r) + abs(lpos[1] - c)
+            if bfs_dir:
+                lines.append(
+                    f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}"
+                    f"  → NEXT STEP: move {bfs_dir}  (Manhattan: {manhattan})"
+                )
+            elif manhattan == 0:
+                lines.append(f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}  → you are already here")
+            else:
+                # BFS found no path through known map — unexplored space may help; fall back
+                fallback = _nav_hint(pos, lpos)
+                lines.append(
+                    f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}"
+                    f"  → path unclear (explore toward {fallback})"
+                )
     else:
         lines.append("\nNo landmark locations known yet. Use ask_dm ONCE to get coordinates.")
 
@@ -321,7 +383,23 @@ def _format_observation(
     # Last action feedback
     if last_result is not None:
         if not last_result.get("success", True):
-            lines.append(f"\nLast action FAILED: {last_result.get('reason', 'unknown')}. Try something different.")
+            reason = last_result.get("reason", "unknown")
+            # Give targeted wall-avoidance guidance
+            if reason == "Wall in the way" and last_tool_call and last_tool_call.get("tool") == "move":
+                failed_dir = last_tool_call.get("args", {}).get("direction", "")
+                perp = {
+                    "north": "east or west",
+                    "south": "east or west",
+                    "east":  "north or south",
+                    "west":  "north or south",
+                }.get(failed_dir, "a perpendicular direction")
+                lines.append(
+                    f"\n⚠ Last move {failed_dir} FAILED — wall blocking that direction. "
+                    f"Do NOT move {failed_dir} again. Move {perp} first to get around the wall, "
+                    f"then continue toward your target."
+                )
+            else:
+                lines.append(f"\nLast action FAILED: {reason}. Try something different.")
         else:
             lines.append("\nLast action succeeded.")
 

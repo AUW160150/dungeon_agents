@@ -1,3 +1,4 @@
+import threading
 from world import DungeonWorld
 from agents import Agent
 from tracer import Tracer
@@ -18,13 +19,17 @@ class GameLoop:
         max_turns: int = 100,
         on_event: Optional[Callable] = None,
         dm=None,
+        pause_event: Optional[threading.Event] = None,
+        stop_event: Optional[threading.Event] = None,
     ):
-        self.world     = world
-        self.agents    = {"A": agent_a, "B": agent_b}
-        self.tracer    = tracer
-        self.max_turns = max_turns
-        self.on_event  = on_event
-        self.dm        = dm
+        self.world       = world
+        self.agents      = {"A": agent_a, "B": agent_b}
+        self.tracer      = tracer
+        self.max_turns   = max_turns
+        self.on_event    = on_event
+        self.dm          = dm
+        self.pause_event = pause_event   # threading.Event — cleared = paused, set = running
+        self.stop_event  = stop_event    # threading.Event — set = stop requested
 
         self._pending_messages: dict[str, list[str]] = {"A": [], "B": []}
 
@@ -51,6 +56,19 @@ class GameLoop:
         print(f"{'='*40}\n")
 
         while turn < self.max_turns:
+            # Stop requested (user clicked Stop in viewer)
+            if self.stop_event and self.stop_event.is_set():
+                print(f"\nRun stopped by user on turn {turn}.")
+                self.tracer.log_run_end("stopped", turn)
+                if self.on_event:
+                    self.on_event({"type": "run_end", "outcome": "stopped",
+                                   "total_turns": turn, "run_id": self.tracer.run_id})
+                return "stopped"
+
+            # Pause requested — block until resumed
+            if self.pause_event:
+                self.pause_event.wait()
+
             agent_id = order[turn % 2]
             agent    = self.agents[agent_id]
 
@@ -74,7 +92,8 @@ class GameLoop:
 
             # Execute tool
             result      = self._execute_tool(agent_id, tool_call, agent, turn)
-            agent.last_result = result
+            agent.last_result    = result
+            agent.last_tool_call = tool_call
             world_after = self.world.world_snapshot()
 
             # Sync landmark memory across both agents after key events

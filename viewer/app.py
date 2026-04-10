@@ -20,8 +20,12 @@ app = Flask(__name__)
 RUNS_DIR = Path(__file__).parent.parent / "runs"
 
 # ── Global SSE state (one run at a time) ─────────────────────────────────────
-_event_queue: queue.Queue = queue.Queue()
-_run_state: dict = {"active": False, "run_id": None}
+_event_queue:   queue.Queue    = queue.Queue()
+_run_state:     dict           = {"active": False, "run_id": None, "paused": False}
+_pause_event:   threading.Event = threading.Event()
+_stop_event:    threading.Event = threading.Event()
+_world_init_cache = None   # replayed to reconnecting streams
+_pause_event.set()   # set = not paused
 
 
 # ── Pages ─────────────────────────────────────────────────────────────────────
@@ -50,8 +54,21 @@ def start_run():
         except queue.Empty:
             break
 
+    # Reset control flags
+    global _world_init_cache
+    _pause_event.set()     # not paused
+    _stop_event.clear()    # not stopped
+    _world_init_cache = None
+
     _run_state["active"] = True
+    _run_state["paused"] = False
     _run_state["run_id"] = None
+
+    def _on_event(event):
+        global _world_init_cache
+        if event.get("type") == "world_init":
+            _world_init_cache = event   # cache so reconnecting streams get it
+        _event_queue.put(event)
 
     def _run():
         from run import simulate
@@ -60,14 +77,46 @@ def start_run():
                 seed=seed,
                 max_turns=max_turns,
                 dm_stale_turns=dm_stale_turns,
-                on_event=_event_queue.put,
+                on_event=_on_event,
+                pause_event=_pause_event,
+                stop_event=_stop_event,
             )
             _run_state["run_id"] = run_id
         finally:
             _run_state["active"] = False
+            _run_state["paused"] = False
+            _pause_event.set()   # ensure unblocked after run ends
 
     threading.Thread(target=_run, daemon=True).start()
     return jsonify({"status": "started", "seed": seed, "max_turns": max_turns})
+
+
+# ── Run control: pause / resume / stop ───────────────────────────────────────
+
+@app.route("/pause", methods=["POST"])
+def pause_run():
+    if not _run_state["active"]:
+        return jsonify({"error": "No active run"}), 400
+    _pause_event.clear()
+    _run_state["paused"] = True
+    return jsonify({"status": "paused"})
+
+
+@app.route("/resume", methods=["POST"])
+def resume_run():
+    _pause_event.set()
+    _run_state["paused"] = False
+    return jsonify({"status": "resumed"})
+
+
+@app.route("/stop", methods=["POST"])
+def stop_run():
+    if not _run_state["active"]:
+        return jsonify({"error": "No active run"}), 400
+    _stop_event.set()
+    _pause_event.set()          # unblock if paused so it can check stop flag
+    _run_state["active"] = False  # release immediately so new run can start
+    return jsonify({"status": "stopping"})
 
 
 # ── SSE stream ────────────────────────────────────────────────────────────────
@@ -75,6 +124,10 @@ def start_run():
 @app.route("/stream")
 def stream():
     def generate():
+        # Replay world_init if a run is already in progress (reconnect after refresh)
+        if _world_init_cache and _run_state["active"]:
+            yield f"data: {json.dumps(_world_init_cache)}\n\n"
+
         while True:
             try:
                 event = _event_queue.get(timeout=1.0)

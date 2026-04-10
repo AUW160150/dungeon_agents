@@ -49,7 +49,7 @@ python viewer/app.py
 # Open http://localhost:5050
 ```
 
-Set seed, max turns, and DM staleness in the UI, then click Run. The dungeon animates live, the trace log scrolls as events arrive, and a post-run analysis panel appears when the run finishes.
+Set seed, max turns, and DM staleness in the UI, then click Run. The dungeon animates live, the trace log scrolls as events arrive, and a post-run analysis panel appears when the run finishes. Use **⏸ Pause** to freeze execution mid-run (no API calls consumed while paused) and **⏹ Stop** to end the run early and trigger analysis.
 
 **CLI:**
 ```bash
@@ -67,23 +67,24 @@ Traces are saved to `runs/<run_id[:8]>.json`.
 
 ```
 world.py        — DungeonWorld: grid, fog of war, item/door logic
-agents.py       — Agent: stateless per-turn LLM decision via function calling
+agents.py       — Agent: LLM decision via function calling, cross-turn landmark/map state
 dm_agent.py     — DungeonMaster: full-map view, configurable staleness
 game_loop.py    — GameLoop: turn order, tool dispatch, cross-agent diagnostics
 tracer.py       — Tracer: event logging, divergence detection, Langfuse spans
 analysis.py     — post-run LLM compression + GPT incident report
 run.py          — simulate(): wires everything together, emits SSE events
-viewer/app.py   — Flask server, SSE stream
-viewer/templates/index.html — two-panel live observer
+viewer/app.py   — Flask server, SSE stream, pause/stop endpoints
+viewer/templates/index.html — two-panel live observer with run controls
+AI_convo/       — full Claude Code conversation transcripts (submission requirement)
 ```
 
 ### Why no framework
 
 LangChain/LangGraph would have obscured the parts that matter here: the event model, the divergence detection, and the boundary between what an agent believes and what is true. Custom tool dispatch means every decision point is explicit and traceable. The game loop is ~250 lines and easy to reason about.
 
-### Why stateless agents
+### Why stateless LLM calls (with Python-side memory)
 
-Each turn, the agent gets only its current observable state — no conversation history carried across turns. This was a deliberate choice: it makes the context window predictable, keeps each LLM call independently traceable, and forces interesting failure modes. An agent that forgets it already picked up the key, or one that keeps asking the DM the same question despite receiving answers, produces more diagnostic signal than one that accumulates a perfect mental model.
+Each LLM call gets only the current observable state — no conversation history carried across turns. This keeps each call independently traceable and the context window predictable. However, the Python `Agent` object does accumulate cross-turn state: a `known_map` of every cell ever seen (used for BFS pathfinding around walls), `known_landmarks` (key/door/exit coordinates from DM or observation), and recent position history for loop detection. The LLM is stateless; the harness is not. This split is intentional — it means the agent's "memory" is explicit, inspectable, and logged, rather than buried in a growing context window.
 
 ---
 
@@ -222,3 +223,10 @@ Saved to `runs/`. Each file contains the full event log plus the post-run analys
 - `.env` — credentials
 - `dun/` — virtualenv
 - `__pycache__/`
+
+---
+
+## Submission
+
+- `runs/` — 13 trace files (mix of successes, turn-limit failures, and interesting failure modes)
+- `AI_convo/` — full Claude Code conversation transcripts showing the full development session

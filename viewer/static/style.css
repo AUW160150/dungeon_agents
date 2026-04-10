@@ -97,6 +97,33 @@ code, pre { font-family: var(--font); font-size: 0.85em; }
 .btn-run:hover:not(:disabled)  { background: #849af7; }
 .btn-run:disabled { opacity: 0.5; cursor: not-allowed; }
 
+.btn-pause {
+  background: #2a2e40;
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-pause:hover { background: #332e10; }
+
+.btn-stop {
+  background: #2a1a1a;
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-stop:hover { background: #3a1a1a; }
+.btn-stop:disabled { opacity: 0.5; cursor: not-allowed; }
+
 .btn-small {
   display: inline-block;
   padding: 0.25rem 0.6rem;
@@ -154,6 +181,8 @@ code, pre { font-family: var(--font); font-size: 0.85em; }
 .badge--stuck      { background: rgba(224,92,92,0.2);   color: var(--red); }
 .badge--error      { background: rgba(224,92,92,0.2);   color: var(--red); }
 .badge--unknown    { background: var(--surface2); color: var(--dim); }
+.badge--paused     { background: rgba(224,184,74,0.15); color: var(--yellow); }
+.badge--stopped    { background: rgba(224,92,92,0.15);  color: var(--red); }
 
 /* ── Workspace ─────────────────────────────────────────────────────────────── */
 .workspace {

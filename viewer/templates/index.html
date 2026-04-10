@@ -26,7 +26,9 @@
         <input id="stale-input" type="number" value="5" min="1" max="50"
                title="How many turns behind the Dungeon Master's world state is" />
       </label>
-      <button id="run-btn" class="btn-run" onclick="startRun()">▶ Run</button>
+      <button id="run-btn"    class="btn-run"   onclick="startRun()">▶ Run</button>
+      <button id="pause-btn"  class="btn-pause hidden" onclick="togglePause()">⏸ Pause</button>
+      <button id="stop-btn"   class="btn-stop  hidden" onclick="stopRun()">⏹ Stop</button>
     </div>
   </header>
 
@@ -100,6 +102,7 @@ let runId        = null;
 let evtSource    = null;
 let divergeCount = 0;
 let totalTurns   = 0;
+let isPaused     = false;
 const trailPts   = { A: [], B: [] };  // SVG coordinate history per agent
 let worldData    = null;              // world_init payload
 const MILESTONES = {};                // { key_picked: turn, door_open: turn, ... }
@@ -127,11 +130,15 @@ function startRun() {
     '<div class="dungeon-placeholder">Connecting…</div>';
   divergeCount = 0;
   totalTurns   = 0;
+  isPaused     = false;
   trailPts.A   = [];
   trailPts.B   = [];
   worldData    = null;
   Object.keys(MILESTONES).forEach(k => delete MILESTONES[k]);
   setBadge("running");
+  document.getElementById("pause-btn").classList.remove("hidden");
+  document.getElementById("pause-btn").textContent = "⏸ Pause";
+  document.getElementById("stop-btn").classList.remove("hidden");
 
   // Open SSE first, then trigger run
   if (evtSource) evtSource.close();
@@ -148,6 +155,27 @@ function startRun() {
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({ seed, max_turns: maxTurns, dm_stale_turns: dmStaleTurns }),
   });
+}
+
+function togglePause() {
+  const btn = document.getElementById("pause-btn");
+  if (isPaused) {
+    fetch("/resume", { method: "POST" });
+    isPaused = false;
+    btn.textContent = "⏸ Pause";
+    setBadge("running");
+  } else {
+    fetch("/pause", { method: "POST" });
+    isPaused = true;
+    btn.textContent = "▶ Resume";
+    setBadge("paused");
+  }
+}
+
+function stopRun() {
+  fetch("/stop", { method: "POST" });
+  document.getElementById("stop-btn").disabled = true;
+  document.getElementById("stop-btn").textContent = "⏹ Stopping…";
 }
 
 function downloadJSON() {
@@ -235,6 +263,11 @@ function onRunEnd(data) {
   document.getElementById("run-btn").disabled  = false;
   document.getElementById("run-btn").textContent = "▶ Run";
   document.getElementById("download-btn").disabled = false;
+  document.getElementById("pause-btn").classList.add("hidden");
+  document.getElementById("stop-btn").classList.add("hidden");
+  document.getElementById("stop-btn").disabled = false;
+  document.getElementById("stop-btn").textContent = "⏹ Stop";
+  isPaused = false;
   // Keep evtSource open — waiting for analysis event
 
   // End-of-run banner in log
@@ -643,7 +676,7 @@ function fmtResult(result) {
 }
 function outcomeLabel(o) {
   return { success: "✓ Both agents reached the exit", turn_limit: "Turn limit reached",
-           stuck: "Agents stuck" }[o] || o;
+           stuck: "Agents stuck", stopped: "⏹ Run stopped by user" }[o] || o;
 }
 
 function setBadge(state) {
