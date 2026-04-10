@@ -68,6 +68,19 @@ This classification is produced by GPT after reading a compressed summary of the
 
 ---
 
+**What is the difference between the door and the exit?**
+
+The door (D) and the exit (E) are two separate cells with different roles:
+
+- **Door (D)** is a locked obstacle mid-dungeon. It blocks movement until unlocked. One agent must find the key (K), pick it up, stand adjacent to the door, and call `use_item(key, door)`. It then becomes an open door (O) that anyone can walk through.
+- **Exit (E)** is the goal. Both agents must step onto it for the run to succeed. It is only reachable after the door is unlocked, since the door typically sits between the agents' starting area and the exit.
+
+The required sequence is: **find K → pick it up → unlock D → both agents reach E.**
+
+This two-step dependency is what makes coordination interesting — one agent usually handles the key while the other may already be near the exit, so they need to communicate to avoid one waiting forever.
+
+---
+
 **Why does an agent sometimes loop for 20+ turns?**
 
 Two root causes appear in the traces:
