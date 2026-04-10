@@ -112,8 +112,8 @@ Rules:
 
 Strategy (follow in strict priority order):
 
-1. TURN 0 — Your very first turn: ask_dm("Where is the key, door, and exit? Give row and col for each.")
-   Do this before anything else. You need coordinates to navigate efficiently.
+1. TURN 0 ONLY — If you have no landmark locations known yet: ask_dm("Where is the key, door, and exit? Give row and col for each.")
+   Do this exactly once. Once you have coordinates, never ask the DM the same question again — navigate instead.
 
 2. KEY PICKUP — If you are standing on K (visible in your current cell): pick_up immediately.
 
@@ -179,6 +179,11 @@ class Agent:
         # If we're carrying the key, it's no longer on the floor
         if "key" in obs.get("inventory", []):
             self.known_landmarks.pop("key", None)
+
+        # If the door is already unlocked, the key is gone — stop navigating to it
+        if obs.get("door_unlocked"):
+            self.known_landmarks.pop("key", None)
+            self.known_landmarks.pop("door", None)
 
         self.turn_count += 1
 
@@ -273,11 +278,12 @@ def _format_observation(
     pos = obs["position"]
     r, c = pos
 
+    door_status = "YES — door is open, head straight to the EXIT" if obs['door_unlocked'] else "NO — someone must find the key and unlock it first"
     lines = [
         f"Turn: {turn_count}",
         f"Your position: row={r}, col={c}",
         f"Inventory: {obs['inventory'] or 'empty'}",
-        f"Door unlocked: {obs['door_unlocked']}",
+        f"Door unlocked: {door_status}",
         "",
         "Visible cells (row,col → cell type):",
     ]
@@ -293,12 +299,12 @@ def _format_observation(
 
     # Known landmarks + navigation hints
     if known_landmarks:
-        lines.append("\nKnown landmark locations (from your exploration or messages):")
+        lines.append("\nKnown landmark locations — USE THESE TO NAVIGATE, do not ask_dm again:")
         for name, lpos in known_landmarks.items():
             hint = _nav_hint(pos, lpos)
             lines.append(f"  {name.upper()}: row={lpos[0]}, col={lpos[1]}  → {hint}")
     else:
-        lines.append("\nNo landmark locations known yet — ask_dm to get coordinates.")
+        lines.append("\nNo landmark locations known yet. Use ask_dm ONCE to get coordinates.")
 
     # Loop warning
     if is_looping:

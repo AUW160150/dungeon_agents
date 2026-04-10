@@ -77,6 +77,18 @@ class GameLoop:
             agent.last_result = result
             world_after = self.world.world_snapshot()
 
+            # Sync landmark memory across both agents after key events
+            if tool_call.get("tool") == "pick_up" and result.get("item") == "key":
+                # Key is off the floor — both agents should stop navigating to it
+                for ag in self.agents.values():
+                    ag.known_landmarks.pop("key", None)
+            if tool_call.get("tool") == "use_item" and result.get("success"):
+                # Key consumed, door open — both agents clear key, update door status
+                for ag in self.agents.values():
+                    ag.known_landmarks.pop("key", None)
+                    if "door" in ag.known_landmarks:
+                        ag.known_landmarks["door_open"] = ag.known_landmarks.pop("door")
+
             # ── Repeated-failure tracking ──────────────────────────────
             action_key = f"{tool_call['tool']}:{tool_call.get('args', {})}"
             if not result.get("success", True) and action_key == self._last_action[agent_id]:
@@ -212,6 +224,18 @@ class GameLoop:
 
         current_truth = self.world.world_snapshot()
         dm_result     = self.dm.answer(agent_id, question, turn)
+
+        # Populate the agent's landmark memory directly from the DM's stale snapshot.
+        # This gives the agent structured coordinates to navigate with, not just text.
+        # Uses stale data intentionally — divergences are still detected by the tracer.
+        snap = dm_result.get("stale_snapshot", {})
+        agent = self.agents[agent_id]
+        if snap.get("key_location") and "key" not in agent.known_landmarks:
+            agent.known_landmarks["key"] = snap["key_location"]
+        if snap.get("door_location") and "door" not in agent.known_landmarks:
+            agent.known_landmarks["door"] = snap["door_location"]
+        if snap.get("exit_location") and "exit" not in agent.known_landmarks:
+            agent.known_landmarks["exit"] = snap["exit_location"]
 
         dm_event = self.tracer.log_dm_interaction(
             turn=turn,
