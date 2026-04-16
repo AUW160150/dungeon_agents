@@ -68,6 +68,7 @@ def start_run():
         global _world_init_cache
         if event.get("type") == "world_init":
             _world_init_cache = event   # cache so reconnecting streams get it
+            _run_state["run_id"] = event.get("run_id")  # set immediately at run start
         _event_queue.put(event)
 
     def _run():
@@ -133,7 +134,9 @@ def stream():
                 event = _event_queue.get(timeout=1.0)
                 yield f"data: {json.dumps(event)}\n\n"
                 if event.get("type") in ("analysis", "analysis_error"):
-                    break
+                    if event.get("run_id") == _run_state.get("run_id"):
+                        break
+                    # Stale analysis from a previous run — discard and keep streaming
             except queue.Empty:
                 # Keep connection alive; stop if run finished and queue is empty
                 if not _run_state["active"]:

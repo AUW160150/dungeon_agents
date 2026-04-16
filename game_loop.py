@@ -67,9 +67,12 @@ class GameLoop:
                                    "total_turns": turn, "run_id": self.tracer.run_id})
                 return "stopped"
 
-            # Pause requested — block until resumed
+            # Pause requested — block until resumed (5s heartbeat so it's never silent)
             if self.pause_event:
-                self.pause_event.wait()
+                while not self.pause_event.wait(timeout=5.0):
+                    print(f"  [game_loop] ⏸  paused at turn {turn} — waiting for resume…")
+                    if self.stop_event and self.stop_event.is_set():
+                        break
 
             agent_id = order[turn % 2]
             agent    = self.agents[agent_id]
@@ -93,26 +96,31 @@ class GameLoop:
             if self.on_event:
                 self.on_event({"type": "turn_start", "turn": turn, "agent": agent_id})
 
+            print(f"  [dbg] T{turn} pre-decide agent={agent_id}", flush=True)
             # Agent decides
             tool_call, prompt, raw_response, latency_ms = agent.decide(obs, messages_received)
+            print(f"  [dbg] T{turn} post-decide", flush=True)
 
             # Execute tool
             result      = self._execute_tool(agent_id, tool_call, agent, turn)
             agent.last_result    = result
             agent.last_tool_call = tool_call
+            print(f"  [dbg] T{turn} tool done", flush=True)
             world_after = self.world.world_snapshot()
+            print(f"  [dbg] T{turn} snapshot done", flush=True)
 
             # Sync landmark memory across both agents after key events
             if tool_call.get("tool") == "pick_up" and result.get("item") == "key":
-                # Key is off the floor — both agents should stop navigating to it
+                print(f"  [dbg] T{turn} KEY PICKED UP — syncing landmarks", flush=True)
                 for ag in self.agents.values():
                     ag.known_landmarks.pop("key", None)
+                print(f"  [dbg] T{turn} landmarks synced", flush=True)
             if tool_call.get("tool") == "use_item" and result.get("success"):
-                # Key consumed, door open — both agents clear key and door from landmarks.
-                # They should now navigate to exit only.
+                print(f"  [dbg] T{turn} DOOR UNLOCKED — syncing landmarks", flush=True)
                 for ag in self.agents.values():
                     ag.known_landmarks.pop("key", None)
                     ag.known_landmarks.pop("door", None)
+                print(f"  [dbg] T{turn} landmarks synced", flush=True)
 
             # ── Repeated-action tracking (failure and infinite-loop detection) ──
             action_key = f"{tool_call['tool']}:{tool_call.get('args', {})}"
@@ -170,6 +178,7 @@ class GameLoop:
 
             belief_state = {**obs, "messages_received": messages_received}
 
+            print(f"  [dbg] T{turn} calling log_turn", flush=True)
             event = self.tracer.log_turn(
                 turn=turn,
                 agent=agent_id,
@@ -177,7 +186,7 @@ class GameLoop:
                 action=tool_call,
                 result=result,
                 belief_state=belief_state,
-                world_truth=world_before,       # ← FIXED: belief vs truth at decision time
+                world_truth=world_before,
                 llm_prompt=prompt,
                 llm_response=raw_response,
                 latency_ms=latency_ms,
@@ -189,13 +198,16 @@ class GameLoop:
                     "messages_in_flight": {k: list(v) for k, v in self._pending_messages.items()},
                 },
             )
+            print(f"  [dbg] T{turn} log_turn done", flush=True)
 
             print(
                 f"Turn {turn:3d} | Agent {agent_id} | "
-                f"{tool_call['tool']}({tool_call['args']}) → {result}"
+                f"{tool_call['tool']}({tool_call['args']}) → {result}",
+                flush=True,
             )
 
             # SSE — includes positions_after separately so the SVG trail is correct
+            print(f"  [dbg] T{turn} firing SSE turn event", flush=True)
             if self.on_event:
                 self.on_event({
                     "type":           "turn",
@@ -203,6 +215,7 @@ class GameLoop:
                     "positions_after": world_after["agent_positions"],
                     "messages_in_flight": {k: list(v) for k, v in self._pending_messages.items()},
                 })
+            print(f"  [dbg] T{turn} SSE done", flush=True)
 
             # Win
             if self._both_at_exit():

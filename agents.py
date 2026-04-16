@@ -8,7 +8,12 @@ from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+    timeout=12.0,
+    max_retries=0,
+)
 
 # ------------------------------------------------------------------
 # Tool definitions (OpenAI function calling format)
@@ -145,7 +150,7 @@ Your agent ID: {agent_id}
 
 
 class Agent:
-    def __init__(self, agent_id: str, model: str = "gpt-4o-mini"):
+    def __init__(self, agent_id: str, model: str = "openai/gpt-4o-mini"):
         self.agent_id   = agent_id
         self.model      = model
         self.last_result: Optional[dict] = None
@@ -221,7 +226,7 @@ class Agent:
             {"role": "user",   "content": obs_text},
         ]
 
-        print(f"  [agent {self.agent_id}] calling LLM (turn {self.turn_count})…")
+        print(f"  [agent {self.agent_id}] calling LLM (turn {self.turn_count})…", flush=True)
         start = time.time()
         try:
             response = _client.chat.completions.create(
@@ -229,19 +234,18 @@ class Agent:
                 messages=messages,
                 tools=TOOLS,
                 tool_choice="required",
-                timeout=10,
             )
             latency_ms = int((time.time() - start) * 1000)
             if latency_ms > 5000:
-                print(f"  [agent {self.agent_id}] ⚠ slow LLM response: {latency_ms}ms")
+                print(f"  [agent {self.agent_id}] ⚠ slow LLM response: {latency_ms}ms", flush=True)
             raw_response = response.model_dump_json()
             choice       = response.choices[0]
             tool_call = choice.message.tool_calls[0] if choice.message.tool_calls else None
         except Exception as e:
             latency_ms   = int((time.time() - start) * 1000)
             raw_response = f'{{"error": "{e}"}}'
-            print(f"  [agent {self.agent_id}] ✗ LLM call failed after {latency_ms}ms: {type(e).__name__}: {e}")
-            print(f"  [agent {self.agent_id}]   → defaulting to look (run continues)")
+            print(f"  [agent {self.agent_id}] ✗ LLM call failed after {latency_ms}ms: {type(e).__name__}: {e}", flush=True)
+            print(f"  [agent {self.agent_id}]   → defaulting to look (run continues)", flush=True)
             tool_call = None
 
         if tool_call is None:
@@ -286,7 +290,8 @@ def _bfs_next_step(known_map: dict, from_pos: list, to_pos: list) -> Optional[st
     """
     BFS on the agent's known map to find the first direction to move toward to_pos.
     Cells not yet seen are treated as passable (optimistic exploration).
-    Walls (#) and locked doors (D) are impassable.
+    Walls (#) are always impassable. Locked doors (D) are impassable UNLESS they
+    are the goal itself (so we can navigate toward a door to unlock it).
     Returns the first direction, or None if already there or truly unreachable.
     """
     start = tuple(from_pos)
@@ -298,14 +303,20 @@ def _bfs_next_step(known_map: dict, from_pos: list, to_pos: list) -> Optional[st
     visited = {start}
     queue   = deque([(start, None)])  # (pos, first_direction_taken)
 
-    while queue:
+    # Safety cap: prevents BFS from expanding into infinite unknown space if the
+    # goal is genuinely unreachable on the known map. 400 >> any reachable cell
+    # count on a 10×10 grid, so legitimate paths are never cut short.
+    MAX_VISITED = 400
+
+    while queue and len(visited) < MAX_VISITED:
         pos, first_dir = queue.popleft()
         for dir_name, dr, dc in DIRS:
             npos = (pos[0] + dr, pos[1] + dc)
             if npos in visited:
                 continue
             cell = known_map.get(npos)
-            if cell in ("#", "D"):        # known impassable
+            # '#' is always impassable; 'D' is impassable except when it IS the goal
+            if cell == "#" or (cell == "D" and npos != goal):
                 continue
             fd = first_dir if first_dir is not None else dir_name
             if npos == goal:
@@ -313,7 +324,7 @@ def _bfs_next_step(known_map: dict, from_pos: list, to_pos: list) -> Optional[st
             visited.add(npos)
             queue.append((npos, fd))
 
-    return None  # no path found through known + unknown cells
+    return None  # no path found (or MAX_VISITED hit — fall back to nav hint)
 
 
 def _format_observation(

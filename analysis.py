@@ -11,7 +11,12 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+    timeout=30.0,
+    max_retries=0,
+)
 
 PROMPT = """You are a senior engineer doing a post-mortem on a multi-agent AI system.
 
@@ -168,7 +173,7 @@ def generate(events: list) -> dict:
     summary = _compress(events)
 
     response = _client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="openai/gpt-4o-mini",
         messages=[{"role": "user", "content": PROMPT.format(summary=summary)}],
         response_format={"type": "json_object"},
         max_tokens=700,

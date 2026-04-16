@@ -133,7 +133,9 @@ class Tracer:
 
         if LANGFUSE_ENABLED and self._lf_span:
             self._lf_span.end()
-            _lf.flush()
+            # Flush in background — sync flush blocks the game loop thread
+            import threading
+            threading.Thread(target=_lf.flush, daemon=True).start()
 
     # ------------------------------------------------------------------
     # DM interaction logging

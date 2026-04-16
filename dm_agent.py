@@ -14,7 +14,12 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_client = OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1",
+    timeout=12.0,
+    max_retries=0,
+)
 
 DM_SYSTEM = """You are the Dungeon Master overseeing a dungeon grid. You have full visibility of the board, but your observation is {staleness} turn(s) old — the world may have changed since then.
 
@@ -29,7 +34,7 @@ Answer the explorer's question in 1-2 sentences. Be specific with coordinates [r
 
 
 class DungeonMaster:
-    def __init__(self, stale_turns: int = 5, model: str = "gpt-4o-mini"):
+    def __init__(self, stale_turns: int = 5, model: str = "openai/gpt-4o-mini"):
         self.stale_turns  = stale_turns
         self.model        = model
         # Each entry: {"turn": int, "snapshot": dict}
