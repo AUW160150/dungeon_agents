@@ -205,6 +205,7 @@ function handleSSE(e) {
   try { data = JSON.parse(e.data); } catch { return; }
   if (data.type === "ping")            return;
   if (data.type === "world_init")      onWorldInit(data);
+  else if (data.type === "turn_start") onTurnStart(data);
   else if (data.type === "turn")       onTurn(data);
   else if (data.type === "dm_interaction") onDMInteraction(data);
   else if (data.type === "run_end")    onRunEnd(data);
@@ -219,6 +220,15 @@ function onWorldInit(data) {
   document.getElementById("run-id-label").textContent =
     `${data.run_id.slice(0, 8)} · seed: ${data.seed} · DM staleness: ${data.dm_stale_turns}t`;
   buildSVG(data);
+}
+
+// ── turn_start ────────────────────────────────────────────────────────────────
+function onTurnStart(data) {
+  const badge = data.agent === "A" ? "badge--a" : "badge--b";
+  document.getElementById("turn-counter").textContent =
+    `Turn ${data.turn} · Agent ${data.agent} thinking…`;
+  document.getElementById("status-text").textContent =
+    `Agent ${data.agent} deciding…`;
 }
 
 // ── turn ──────────────────────────────────────────────────────────────────────

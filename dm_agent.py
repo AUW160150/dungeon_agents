@@ -108,7 +108,7 @@ class DungeonMaster:
                 {"role": "user",   "content": f"Agent {asker_id} asks: {question}"},
             ],
             max_tokens=120,
-            timeout=30,
+            timeout=10,
         )
         latency_ms   = int((time.time() - t0) * 1000)
         answer_text  = response.choices[0].message.content.strip()

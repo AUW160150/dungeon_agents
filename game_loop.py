@@ -33,9 +33,11 @@ class GameLoop:
 
         self._pending_messages: dict[str, list[str]] = {"A": [], "B": []}
 
-        # Repeated-failure tracking (same failing action in a row)
+        # Repeated-action tracking (same action in a row, success OR failure)
         self._repeat_failures: dict[str, int]          = {"A": 0, "B": 0}
         self._last_action:     dict[str, Optional[str]] = {"A": None, "B": None}
+        self._same_action_streak: dict[str, int]        = {"A": 0, "B": 0}
+        self._INFINITE_LOOP_THRESHOLD = 8   # warn if same action (any result) N times running
 
         # Coordination gap: turns since any inter-agent message was exchanged
         self._last_message_turn: int = -1
@@ -87,6 +89,10 @@ class GameLoop:
             # Update agent's cross-turn knowledge (landmarks, loop detection)
             agent.update_knowledge(obs)
 
+            # Signal browser that we're waiting for the LLM (prevents "frozen" appearance)
+            if self.on_event:
+                self.on_event({"type": "turn_start", "turn": turn, "agent": agent_id})
+
             # Agent decides
             tool_call, prompt, raw_response, latency_ms = agent.decide(obs, messages_received)
 
@@ -108,13 +114,27 @@ class GameLoop:
                     ag.known_landmarks.pop("key", None)
                     ag.known_landmarks.pop("door", None)
 
-            # ── Repeated-failure tracking ──────────────────────────────
+            # ── Repeated-action tracking (failure and infinite-loop detection) ──
             action_key = f"{tool_call['tool']}:{tool_call.get('args', {})}"
             if not result.get("success", True) and action_key == self._last_action[agent_id]:
                 self._repeat_failures[agent_id] += 1
             else:
                 self._repeat_failures[agent_id] = 0
+
+            if action_key == self._last_action[agent_id]:
+                self._same_action_streak[agent_id] += 1
+            else:
+                self._same_action_streak[agent_id] = 0
             self._last_action[agent_id] = action_key
+
+            # Infinite-loop warning — same action (any outcome) repeated too many times
+            streak = self._same_action_streak[agent_id]
+            if streak > 0 and streak % self._INFINITE_LOOP_THRESHOLD == 0:
+                print(
+                    f"  [loop] ⚠ INFINITE LOOP DETECTED: Agent {agent_id} has called "
+                    f"'{tool_call['tool']}' {streak} times in a row "
+                    f"(result: {'✓' if result.get('success', True) else '✗'} {result})"
+                )
 
             # ── Stagnation tracking ────────────────────────────────────
             cur_pos = world_after["agent_positions"][agent_id]
@@ -242,7 +262,11 @@ class GameLoop:
             return {"success": False, "reason": "No Dungeon Master in this run"}
 
         current_truth = self.world.world_snapshot()
-        dm_result     = self.dm.answer(agent_id, question, turn)
+        try:
+            dm_result = self.dm.answer(agent_id, question, turn)
+        except Exception as e:
+            print(f"  [DM] Call failed: {e}")
+            return {"success": False, "reason": f"DM unavailable: {str(e)[:80]}"}
 
         # Populate the agent's landmark memory directly from the DM's stale snapshot.
         # This gives the agent structured coordinates to navigate with, not just text.
